@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: projeto-integrador
+    env: docker
+    plan: free
+    autoDeploy: true
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JAVA_OPTS
+        value: "-Xms256m -Xmx512m"
+      - key: PORT
+        value: 8080

@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>STOKIO — Plataforma Maker SENAI</title>
+  <meta name="description" content="Sistema intuitivo e rápido de gestão de estoque, kits, empréstimos e laboratórios Fab Lab SENAI">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6.5 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM & TOKENS — Minimalist, Clean & Intuitive
+       ========================================================================== */
+    :root {
+      --bg-dark:        #0C1017;
+      --bg-surface:     #131922;
+      --bg-card:        #18212D;
+      --bg-card-hover:  #1F2B3A;
+      --bg-input:       #111720;
+      --border:         rgba(255, 255, 255, 0.08);
+      --border-focus:   #0284C7;
+
+      --blue-primary:   #0284C7;
+      --blue-hover:     #0369A1;
+      --blue-light:     #38BDF8;
+      --blue-subtle:    rgba(2, 132, 199, 0.12);
+
+      --text-main:      #F1F5F9;
+      --text-muted:     #94A3B8;
+      --text-dim:       #64748B;
+
+      --success:        #10B981;
+      --warning:        #F59E0B;
+      --danger:         #EF4444;
+      --purple:         #8B5CF6;
+
+      --radius-sm:      6px;
+      --radius-md:      10px;
+      --radius-lg:      16px;
+      --radius-full:    9999px;
+
+      --shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md:      0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: #243041; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--blue-primary); }
+
+    /* SVG LOGO COMPONENT */
+    .stokio-emblem-svg {
+      width: 44px;
+      height: 44px;
+      filter: drop-shadow(0 2px 6px rgba(2, 132, 199, 0.3));
+    }
+
+    /* ==========================================================================
+       AUTHENTICATION SCREEN
+       ========================================================================== */
+    #auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: var(--bg-dark);
+    }
+
+    .auth-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+
+    .auth-logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .auth-logo-wrap h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin-top: 10px;
+      color: var(--text-main);
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 11px 14px;
+      color: var(--text-main);
+      font-size: 13.5px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .form-control:focus {
+      border-color: var(--blue-primary);
+      background: #141B26;
+    }
+    select.form-control {
+      cursor: pointer;
+    }
+    textarea.form-control {
+      resize: vertical;
+      min-height: 70px;
+    }
+    .input-wrapper i.toggle-password {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+
+    .btn-action-primary {
+      width: 100%;
+      padding: 12px 18px;
+      background: var(--blue-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-action-primary:hover {
+      background: var(--blue-hover);
+    }
+
+    .auth-footer-text {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .auth-footer-text a {
+      color: var(--blue-light);
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       MAIN APP & SIMPLIFIED NAVIGATION
+       ========================================================================== */
+    #app-container {
+      display: none;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    .app-topbar {
+      height: 58px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar-brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .topbar-brand-badge h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--text-main);
+    }
+    .topbar-brand-badge span {
+      font-size: 11px;
+      padding: 2px 6px;
+      background: var(--blue-subtle);
+      color: var(--blue-light);
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-pill-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 5px 12px 5px 6px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .user-pill-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--blue-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Clean 6-Item Main Navigation */
+    .app-nav-tabs {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      padding: 0 16px;
+      gap: 6px;
+      scrollbar-width: none;
+    }
+    .app-nav-tabs::-webkit-scrollbar { display: none; }
+    .nav-tab-btn {
+      padding: 12px 18px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .nav-tab-btn i {
+      font-size: 14px;
+    }
+    .nav-tab-btn:hover {
+      color: var(--text-main);
+    }
+    .nav-tab-btn.active {
+      color: var(--blue-light);
+      border-bottom-color: var(--blue-primary);
+    }
+
+    .main-viewport {
+      flex: 1;
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .view-section {
+      display: none;
+    }
+    .view-section.active {
+      display: block;
+    }
+
+    /* Sub-tabs inside views */
+    .sub-tabs-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: var(--bg-input);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      width: fit-content;
+    }
+    .sub-tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .sub-tab-btn.active {
+      background: var(--blue-primary);
+      color: #fff;
+    }
+
+    /* ==========================================================================
+       DASHBOARD: SIMPLIFICADO & DIRETO
+       ========================================================================== */
+    .kpi-row-simplified {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .kpi-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .kpi-icon-wrap.green  { background: rgba(16, 185, 129, 0.12); color: #34D399; }
+    .kpi-icon-wrap.yellow { background: rgba(245, 158, 11, 0.12); color: #FBBF24; }
+    .kpi-icon-wrap.blue   { background: rgba(2, 132, 199, 0.15); color: var(--blue-light); }
+    .kpi-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .kpi-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .dash-main-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+    }
+
+    /* Modernized Interactive Calendar */
+    .dash-calendar-card {
+      background: linear-gradient(180deg, #10263E 0%, #0A192B 100%);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+    .calendar-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .calendar-title-wrap h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16.5px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .calendar-title-wrap i {
+      color: var(--blue-light);
+      font-size: 15px;
+    }
+    .calendar-nav-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-cal-step {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+    .btn-cal-step:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .calendar-weekdays-grid, .calendar-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+    .cal-weekday {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94A3B8;
+      padding: 4px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cal-day-box {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #E2E8F0;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .cal-day-box:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .cal-day-box.selected {
+      background: #FFFFFF;
+      color: #0A192B;
+      font-weight: 800;
+      border-color: #FFFFFF;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    }
+    .cal-day-box.today {
+      border: 1.5px solid var(--blue-light);
+    }
+    .cal-event-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--success);
+      position: absolute;
+      bottom: 4px;
+      box-shadow: 0 0 4px var(--success);
+    }
+
+    /* Próximos Agendamentos & Ações Rápidas */
+    .panel-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .panel-box-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .panel-box-header h3 {
+      font-size: 14.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+    table.custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    table.custom-table th {
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid var(--border);
+    }
+    table.custom-table td {
+      padding: 12px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    table.custom-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* BADGES */
+    .cat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--blue-subtle);
+      border: 1px solid rgba(2, 132, 199, 0.3);
+      color: var(--blue-light);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-pill.green  { background: rgba(16, 185, 129, 0.12); color: #34D399; }
+    .status-pill.red    { background: rgba(239, 68, 68, 0.12); color: #FCA5A5; }
+    .status-pill.yellow { background: rgba(245, 158, 11, 0.12); color: #FBBF24; }
+    .status-pill.blue   { background: rgba(2, 132, 199, 0.15); color: var(--blue-light); }
+
+    /* KITS CARDS */
+    .kits-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .kit-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease;
+    }
+    .kit-item-card:hover {
+      border-color: var(--blue-primary);
+    }
+    .kit-item-banner {
+      height: 100px;
+      background: linear-gradient(135deg, #111E2E, #0A121C);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .kit-item-banner i {
+      font-size: 38px;
+      color: rgba(56, 189, 248, 0.25);
+    }
+    .kit-item-qty-tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      color: var(--blue-light);
+    }
+    .kit-item-content {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .kit-item-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .kit-item-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 12px;
+      flex: 1;
+    }
+
+    /* MODALS */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-content-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-md);
+    }
+    .modal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-head h3 {
+      font-size: 15.5px;
+      font-weight: 600;
+    }
+    .btn-modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .modal-actions {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Collapsible advanced options in forms */
+    .advanced-toggle {
+      font-size: 12.5px;
+      color: var(--blue-light);
+      cursor: pointer;
+      margin: 12px 0 6px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      user-select: none;
+    }
+    .advanced-fields-box {
+      display: none;
+      padding: 12px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+    .advanced-fields-box.open {
+      display: block;
+    }
+
+    /* PROFILE */
+    .profile-card-header {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .profile-avatar-large {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--blue-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* MOBILE BOTTOM NAV */
+    .mobile-footer-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .mob-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+    }
+    .mob-nav-btn.active {
+      color: var(--blue-light);
+    }
+    .mob-nav-btn i {
+      font-size: 15px;
+    }
+
+    @media (max-width: 860px) {
+      .dash-main-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .mobile-footer-nav { display: flex; }
+      .main-viewport { padding: 16px 16px 70px 16px; }
+    }
+
+    #toast-container {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--blue-light);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+    .toast-card.error { border-left-color: var(--danger); }
+  </style>
+</head>
+<body>
+
+<!-- AUTH SCREEN (With mandatory Cargo field) -->
+<div id="auth-container">
+  <div class="auth-card">
+    <div class="auth-logo-wrap">
+      <svg class="stokio-emblem-svg" viewBox="0 0 100 100" fill="none">
+        <path d="M50 15L85 35V65L50 85L15 65V35L50 15Z" stroke="#0284C7" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M50 35L70 45V60L50 70L30 60V45L50 35Z" fill="rgba(2, 132, 199, 0.2)" stroke="#38BDF8" stroke-width="4"/>
+        <path d="M50 25V50M50 25L60 35M50 25L40 35" stroke="#38BDF8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>STOKIO</h1>
+    </div>
+
+    <!-- Login -->
+    <div id="auth-login-view">
+      <div class="form-group">
+        <label class="form-label">E-mail:</label>
+        <div class="input-wrapper">
+          <input type="email" id="input-login-email" class="form-control" placeholder="admin@stokio.senai.br" value="admin@stokio.senai.br">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Senha:</label>
+        <div class="input-wrapper">
+          <input type="password" id="input-login-senha" class="form-control" placeholder="••••••••" value="123456">
+          <i class="fa-regular fa-eye toggle-password" onclick="togglePassVisibility('input-login-senha', this)"></i>
+        </div>
+      </div>
+
+      <button class="btn-action-primary" onclick="performLogin()">Entrar</button>
+
+      <div class="auth-footer-text">
+        Não tem conta? <a onclick="toggleAuthMode('register')">Cadastre-se</a>
+      </div>
+    </div>
+
+    <!-- Register -->
+    <div id="auth-register-view" style="display:none">
+      <div class="form-group"><label class="form-label">Nome Completo:</label><input type="text" id="input-reg-nome" class="form-control" placeholder="Seu Nome"></div>
+      <div class="form-group"><label class="form-label">E-mail Institucional:</label><input type="email" id="input-reg-email" class="form-control" placeholder="nome@senai.br"></div>
+      <div class="form-group">
+        <label class="form-label">Cargo:</label>
+        <select id="input-reg-cargo" class="form-control">
+          <option value="Aluno" selected>Aluno</option>
+          <option value="Professor">Professor</option>
+          <option value="Administrador">Administrador</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Senha:</label><input type="password" id="input-reg-senha" class="form-control" placeholder="••••••••"></div>
+      <button class="btn-action-primary" onclick="performRegister()">Concluir Cadastro</button>
+      <div class="auth-footer-text">
+        Já possui conta? <a onclick="toggleAuthMode('login')">Fazer Login</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APPLICATION SCREEN -->
+<div id="app-container">
+  
+  <header class="app-topbar">
+    <div class="topbar-left">
+      <div class="topbar-brand-badge" onclick="switchNavTab('dashboard')">
+        <svg class="stokio-emblem-svg" style="width:28px;height:28px" viewBox="0 0 100 100" fill="none">
+          <path d="M50 15L85 35V65L50 85L15 65V35L50 15Z" stroke="#0284C7" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M50 35L70 45V60L50 70L30 60V45L50 35Z" fill="rgba(2, 132, 199, 0.2)" stroke="#38BDF8" stroke-width="4"/>
+          <path d="M50 25V50M50 25L60 35M50 25L40 35" stroke="#38BDF8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h2>STOKIO</h2>
+        <span>SENAI</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill-btn" onclick="switchNavTab('perfil')">
+        <div class="user-pill-avatar" id="topbar-avatar-initial">A</div>
+        <span id="topbar-user-name">Administrador</span>
+      </div>
+      <button class="btn-icon-nav" style="color:var(--text-dim)" title="Sair" onclick="performLogout()"><i class="fa-solid fa-power-off"></i></button>
+    </div>
+  </header>
+
+  <!-- Clean 6-Item Main Navigation Bar -->
+  <nav class="app-nav-tabs">
+    <button class="nav-tab-btn active" id="tab-btn-dashboard" onclick="switchNavTab('dashboard')"><i class="fa-solid fa-house"></i> Dashboard</button>
+    <button class="nav-tab-btn" id="tab-btn-materiais" onclick="switchNavTab('materiais')"><i class="fa-solid fa-cubes"></i> Materiais</button>
+    <button class="nav-tab-btn" id="tab-btn-kits" onclick="switchNavTab('kits')"><i class="fa-solid fa-layer-group"></i> Kits</button>
+    <button class="nav-tab-btn" id="tab-btn-emprestimos" onclick="switchNavTab('emprestimos')"><i class="fa-solid fa-hand-holding"></i> Empréstimos</button>
+    <button class="nav-tab-btn" id="tab-btn-reservas" onclick="switchNavTab('reservas')"><i class="fa-solid fa-calendar-days"></i> Reservas</button>
+    <button class="nav-tab-btn" id="tab-btn-perfil" onclick="switchNavTab('perfil')"><i class="fa-solid fa-user"></i> Perfil</button>
+  </nav>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="main-viewport">
+
+    <!-- ==================== 1. DASHBOARD (SIMPLIFICADO) ==================== -->
+    <div class="view-section active" id="view-dashboard">
+      <!-- 3 Key Metric Cards -->
+      <div class="kpi-row-simplified">
+        <div class="kpi-box">
+          <div class="kpi-icon-wrap green"><i class="fa-solid fa-box-open"></i></div>
+          <div>
+            <div class="kpi-number" id="dash-disp-mats">0</div>
+            <div class="kpi-desc">Materiais Disponíveis</div>
+          </div>
+        </div>
+
+        <div class="kpi-box">
+          <div class="kpi-icon-wrap yellow"><i class="fa-solid fa-hand-holding"></i></div>
+          <div>
+            <div class="kpi-number" id="dash-emp-mats">0</div>
+            <div class="kpi-desc">Materiais Emprestados</div>
+          </div>
+        </div>
+
+        <div class="kpi-box">
+          <div class="kpi-icon-wrap blue"><i class="fa-solid fa-layer-group"></i></div>
+          <div>
+            <div class="kpi-number" id="dash-kits-count">0</div>
+            <div class="kpi-desc">Kits Disponíveis</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Calendar + Selected Day Bookings -->
+      <div class="dash-main-layout">
+        <!-- Interactive Calendar -->
+        <div class="dash-calendar-card">
+          <div class="calendar-header">
+            <div class="calendar-title-wrap">
+              <i class="fa-regular fa-calendar"></i>
+              <h3 id="cal-month-title">Agosto 2026</h3>
+            </div>
+            <div class="calendar-nav-buttons">
+              <button class="btn-cal-step" onclick="stepCalMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <button class="btn-cal-step" onclick="stepCalMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+
+          <div class="calendar-weekdays-grid">
+            <div class="cal-weekday">Dom</div>
+            <div class="cal-weekday">Seg</div>
+            <div class="cal-weekday">Ter</div>
+            <div class="cal-weekday">Qua</div>
+            <div class="cal-weekday">Qui</div>
+            <div class="cal-weekday">Sex</div>
+            <div class="cal-weekday">Sáb</div>
+          </div>
+
+          <div class="calendar-days-grid" id="cal-days-container"></div>
+        </div>
+
+        <!-- Selected Day Info & Upcoming Reservations -->
+        <div class="panel-box">
+          <div class="panel-box-header">
+            <h3 id="selected-day-heading"><i class="fa-solid fa-calendar-day" style="color:var(--blue-light)"></i> Agendamentos do Dia</h3>
+            <button class="btn-action-primary" style="width:auto;padding:6px 14px;font-size:12px;margin:0" onclick="openReservaLabForSelectedDay()"><i class="fa-solid fa-plus"></i> Nova Reserva</button>
+          </div>
+          <div style="padding:16px" id="selected-day-content">
+            <div style="color:var(--text-muted);font-size:13px">Selecione uma data no calendário para ver os agendamentos.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 2. MATERIAIS (CADASTRO & LISTA SIMPLIFICADA) ==================== -->
+    <div class="view-section" id="view-materiais">
+      <div class="panel-box">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-cubes" style="color:var(--blue-light)"></i> Materiais</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="select-filter-cat" class="form-control" style="width:auto;padding:7px 12px;font-size:12.5px" onchange="renderMateriaisTable()"><option value="">Todas as Categorias</option></select>
+            <button class="btn-action-primary" style="width:auto;padding:7px 14px;font-size:12.5px;margin:0" onclick="openSmartMaterialModal()"><i class="fa-solid fa-plus"></i> Cadastrar Material</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Categoria</th>
+                <th>Disponível</th>
+                <th>Emprestado</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="materiais-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 3. KITS (SIMPLIFICADO) ==================== -->
+    <div class="view-section" id="view-kits">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="font-family:'Outfit',sans-serif;font-size:20px">Kits</h2>
+        <button class="btn-action-primary" style="width:auto;padding:7px 16px;margin:0" onclick="openCreateKitModal()"><i class="fa-solid fa-plus"></i> Novo Kit</button>
+      </div>
+      <div class="kits-cards-grid" id="kits-cards-container"></div>
+    </div>
+
+    <!-- ==================== 4. GERENCIAMENTO DE EMPRÉSTIMOS (CONSULTA E FISCALIZAÇÃO) ==================== -->
+    <div class="view-section" id="view-emprestimos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div class="sub-tabs-bar" style="margin:0">
+          <button class="sub-tab-btn active" id="sub-btn-emp-mat" onclick="switchEmpSubTab('mat')">Gerenciamento de Empréstimo de Materiais</button>
+          <button class="sub-tab-btn" id="sub-btn-emp-kit" onclick="switchEmpSubTab('kit')">Gerenciamento de Empréstimo de Kits</button>
+        </div>
+      </div>
+
+      <!-- Gerenciamento de Empréstimo de Materiais -->
+      <div class="panel-box" id="panel-emp-mat">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-cubes" style="color:var(--blue-light)"></i> Gerenciamento de Empréstimo de Materiais</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Categoria</th>
+                <th>Quantidade</th>
+                <th>Usuário Responsável</th>
+                <th>Data de Retirada</th>
+                <th>Data de Devolução</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="emp-mat-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Gerenciamento de Empréstimo de Kits -->
+      <div class="panel-box" id="panel-emp-kit" style="display:none">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-layer-group" style="color:var(--blue-light)"></i> Gerenciamento de Empréstimo de Kits</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Nome do Kit</th>
+                <th>Usuário Responsável</th>
+                <th>Data de Retirada</th>
+                <th>Data de Devolução</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="emp-kits-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 5. RESERVAS (LABORATÓRIO E MATERIAIS) ==================== -->
+    <div class="view-section" id="view-reservas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div class="sub-tabs-bar" style="margin:0">
+          <button class="sub-tab-btn active" id="sub-btn-res-lab" onclick="switchResSubTab('lab')">Espaços do Laboratório</button>
+          <button class="sub-tab-btn" id="sub-btn-res-mat" onclick="switchResSubTab('mat')">Materiais</button>
+        </div>
+        <button class="btn-action-primary" id="btn-nova-res-action" style="width:auto;padding:7px 16px;margin:0" onclick="openNovaReservaModal()"><i class="fa-solid fa-plus"></i> Fazer Reserva</button>
+      </div>
+
+      <!-- Reservas Lab -->
+      <div class="panel-box" id="panel-res-lab">
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead><tr><th>Espaço</th><th>Responsável</th><th>Data</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="lab-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Reservas Material -->
+      <div class="panel-box" id="panel-res-mat" style="display:none">
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead><tr><th>Material</th><th>Qtd</th><th>Solicitante</th><th>Retirada</th><th>Devolução</th><th>Status</th></tr></thead>
+            <tbody id="mat-res-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 6. PERFIL (LIMPO & ORGANIZADO) ==================== -->
+    <div class="view-section" id="view-perfil">
+      <div class="profile-card-header">
+        <div class="profile-avatar-large" id="prof-hero-avatar"><i class="fa-solid fa-user"></i></div>
+        <div>
+          <h2 id="prof-hero-name" style="font-family:'Outfit',sans-serif;font-size:20px">Administrador SENAI</h2>
+          <p id="prof-hero-email" style="font-size:13px;color:var(--text-muted)">admin@stokio.senai.br</p>
+          <span class="status-pill blue" style="margin-top:6px" id="prof-hero-role">ADMINISTRADOR</span>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-hand-holding" style="color:var(--blue-light)"></i> Meus Empréstimos Ativos</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead><tr><th>Item</th><th>Retirada</th><th>Devolução Prevista</th><th>Status</th></tr></thead>
+            <tbody id="prof-my-loans-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-calendar-check" style="color:var(--blue-light)"></i> Minhas Reservas de Laboratório</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead><tr><th>Espaço</th><th>Data</th><th>Horário</th><th>Status</th></tr></thead>
+            <tbody id="prof-my-reservas-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Mobile Bottom Nav (Clean 5-Item) -->
+  <nav class="mobile-footer-nav">
+    <button class="mob-nav-btn active" onclick="switchNavTab('dashboard')"><i class="fa-solid fa-house"></i> Home</button>
+    <button class="mob-nav-btn" onclick="switchNavTab('materiais')"><i class="fa-solid fa-cubes"></i> Materiais</button>
+    <button class="mob-nav-btn" onclick="switchNavTab('kits')"><i class="fa-solid fa-layer-group"></i> Kits</button>
+    <button class="mob-nav-btn" onclick="switchNavTab('emprestimos')"><i class="fa-solid fa-hand-holding"></i> Empréstimos</button>
+    <button class="mob-nav-btn" onclick="switchNavTab('perfil')"><i class="fa-solid fa-user"></i> Perfil</button>
+  </nav>
+</div>
+
+<!-- ==================== MODALS SIMPLIFICADOS ==================== -->
+
+<!-- 1. CADASTRO DE MATERIAIS SIMPLIFICADO -->
+<div class="modal-overlay" id="modal-smart-mat">
+  <div class="modal-content-box">
+    <div class="modal-head">
+      <h3>Cadastrar Material</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-smart-mat')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- 1. Escolher Categoria -->
+      <div class="form-group">
+        <label class="form-label">1. Categoria:</label>
+        <select id="smart-cat-select" class="form-control" onchange="onSmartCategorySelected()"></select>
+      </div>
+      <!-- 2. Escolher Material -->
+      <div class="form-group">
+        <label class="form-label">2. Material:</label>
+        <select id="smart-mat-select" class="form-control" onchange="onSmartMaterialSelected()"></select>
+      </div>
+      <!-- 3. Quantidade -->
+      <div class="form-group">
+        <label class="form-label">3. Quantidade:</label>
+        <input type="number" id="smart-mat-qtd" class="form-control" value="10" min="1">
+      </div>
+
+      <!-- Opções avançadas (Opcional/Colapsável) -->
+      <div class="advanced-toggle" onclick="toggleAdvancedFields('adv-mat-fields')">
+        <i class="fa-solid fa-chevron-right" id="adv-mat-icon"></i> Opções Avançadas (Opcional)
+      </div>
+      <div class="advanced-fields-box" id="adv-mat-fields">
+        <div class="form-group"><label class="form-label">Nome Personalizado:</label><input type="text" id="smart-mat-nome" class="form-control"></div>
+        <div class="form-group">
+          <label class="form-label">Estado de Conservação:</label>
+          <select id="smart-mat-conservacao" class="form-control">
+            <option value="Excelente">Excelente</option>
+            <option value="Bom" selected>Bom</option>
+            <option value="Regular">Regular</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-smart-mat')">Cancelar</button>
+      <button class="btn-action-primary" style="width:auto;margin:0" onclick="saveSmartMaterial()"><i class="fa-solid fa-check"></i> Salvar Material</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CADASTRO DE KITS SIMPLIFICADO -->
+<div class="modal-overlay" id="modal-kit-form">
+  <div class="modal-content-box">
+    <div class="modal-head">
+      <h3 id="kit-modal-heading">Novo Kit</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-kit-form')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- 1. Nome do Kit -->
+      <div class="form-group"><label class="form-label">1. Nome do Kit:</label><input type="text" id="kit-input-nome" class="form-control" placeholder="Ex: Kit Arduino Básico"></div>
+      <!-- 2. Categoria -->
+      <div class="form-group"><label class="form-label">2. Categoria:</label><select id="kit-input-cat" class="form-control"></select></div>
+      <!-- 3. Quantidade Disponível -->
+      <div class="form-group"><label class="form-label">3. Quantidade Disponível:</label><input type="number" id="kit-input-qtd" class="form-control" value="5" min="1"></div>
+      
+      <!-- 4. Materiais que compõem o kit -->
+      <label class="form-label" style="margin-top:10px">4. Materiais Inclusos:</label>
+      <div id="kit-items-list-wrap" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+      <button class="btn-action-primary" style="background:var(--bg-input);color:var(--text-main);font-size:13px;padding:8px" onclick="addKitItemRow()"><i class="fa-solid fa-plus"></i> Adicionar Material</button>
+
+      <!-- Opções avançadas -->
+      <div class="advanced-toggle" onclick="toggleAdvancedFields('adv-kit-fields')">
+        <i class="fa-solid fa-chevron-right" id="adv-kit-icon"></i> Descrição e Finalidade (Opcional)
+      </div>
+      <div class="advanced-fields-box" id="adv-kit-fields">
+        <div class="form-group"><label class="form-label">Descrição:</label><textarea id="kit-input-desc" class="form-control" placeholder="Breve resumo do kit..."></textarea></div>
+        <div class="form-group"><label class="form-label">Finalidade Pedagógica:</label><textarea id="kit-input-finalidade" class="form-control" placeholder="Onde é aplicado..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-kit-form')">Cancelar</button>
+      <button class="btn-action-primary" style="width:auto;margin:0" onclick="saveKitData()"><i class="fa-solid fa-check"></i> Salvar Kit</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. DETALHES DO KIT -->
+<div class="modal-overlay" id="modal-kit-detail">
+  <div class="modal-content-box" style="max-width:560px">
+    <div class="modal-head">
+      <h3 id="det-kit-nome">Kit Arduino Básico</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-kit-detail')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <span class="cat-badge" id="det-kit-cat">Placas</span>
+        <span class="status-pill green" id="det-kit-status">Disponível (5 un)</span>
+      </div>
+      <p id="det-kit-desc" style="font-size:13px;color:var(--text-muted);line-height:1.5;margin-bottom:14px"></p>
+      
+      <h4 style="font-size:13px;color:var(--blue-light);margin-bottom:8px">Materiais Inclusos no Kit:</h4>
+      <div id="det-kit-items-list" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-kit-detail')">Fechar</button>
+      <button class="btn-action-primary" style="width:auto;margin:0" onclick="solicitarKitEmprestimo()"><i class="fa-solid fa-hand-holding"></i> Solicitar Empréstimo</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. SOLICITAÇÃO DE EMPRÉSTIMO SIMPLIFICADA (MATERIAIS E KITS) -->
+<div class="modal-overlay" id="modal-emp-form-unified">
+  <div class="modal-content-box">
+    <div class="modal-head">
+      <h3 id="modal-emp-unified-title">Solicitar Empréstimo</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-emp-form-unified')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" id="emp-unified-item-group">
+        <label class="form-label" id="emp-unified-item-label">Item Selecionado:</label>
+        <select id="emp-unified-item-select" class="form-control"></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Data de Retirada:</label>
+          <input type="date" id="emp-unified-data-retirada" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data de Devolução:</label>
+          <input type="date" id="emp-unified-data-devolucao" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quantidade:</label>
+        <input type="number" id="emp-unified-qtd" class="form-control" value="1" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observações (opcional):</label>
+        <input type="text" id="emp-unified-obs" class="form-control" placeholder="Ex: Projeto Integrador Semestre 2">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-emp-form-unified')">Cancelar</button>
+      <button class="btn-action-primary" style="width:auto;margin:0" onclick="saveUnifiedEmprestimo()"><i class="fa-solid fa-check"></i> Solicitar Empréstimo</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. RESERVA DE LABORATÓRIO SIMPLIFICADA -->
+<div class="modal-overlay" id="modal-res-lab">
+  <div class="modal-content-box">
+    <div class="modal-head">
+      <h3>Reserva de Laboratório (Fab Lab)</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-res-lab')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Espaço Físico:</label>
+        <select id="res-lab-select-espaco" class="form-control">
+          <option value="Laboratório Maker">Laboratório Maker</option>
+          <option value="Sala de Eletrônica">Sala de Eletrônica</option>
+          <option value="Sala de Impressão 3D">Sala de Impressão 3D</option>
+          <option value="Sala de Prototipagem">Sala de Prototipagem</option>
+          <option value="Sala de Corte a Laser">Sala de Corte a Laser</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Data:</label><input type="date" id="res-lab-date" class="form-control"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Início:</label>
+          <select id="res-lab-hora-inicio" class="form-control">
+            <option value="08:00" selected>08:00</option>
+            <option value="09:00">09:00</option>
+            <option value="10:00">10:00</option>
+            <option value="11:00">11:00</option>
+            <option value="13:00">13:00</option>
+            <option value="14:00">14:00</option>
+            <option value="15:00">15:00</option>
+            <option value="16:00">16:00</option>
+            <option value="18:00">18:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Término:</label>
+          <select id="res-lab-hora-fim" class="form-control">
+            <option value="09:00">09:00</option>
+            <option value="10:00">10:00</option>
+            <option value="11:00">11:00</option>
+            <option value="12:00" selected>12:00</option>
+            <option value="14:00">14:00</option>
+            <option value="15:00">15:00</option>
+            <option value="16:00">16:00</option>
+            <option value="17:00">17:00</option>
+            <option value="18:00">18:00</option>
+            <option value="20:00">20:00</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-res-lab')">Cancelar</button>
+      <button class="btn-action-primary" style="width:auto;margin:0" onclick="saveReservaLab()"><i class="fa-solid fa-check"></i> Confirmar Reserva</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- ==================== FRONTEND JAVASCRIPT ==================== -->
+<script>
+  const API_BASE = '';
+  let currentUser = null;
+  let cacheMateriais = [];
+  let cacheCategorias = [];
+  let cacheKits = [];
+  let cacheEmprestimosMateriais = [];
+  let cacheEmprestimosKits = [];
+  let cacheAgendamentosLab = [];
+  let currentSelectedKit = null;
+  let calMonth = new Date().getMonth();
+  let calYear = new Date().getFullYear();
+  let selectedCalDateString = new Date().toISOString().split('T')[0];
+  let activeEmpType = 'mat'; // 'mat' or 'kit'
+  let activeResType = 'lab'; // 'lab' or 'mat'
+
+  function showToast(msg, isErr = false) {
+    const box = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast-card ${isErr ? 'error' : ''}`;
+    toast.innerHTML = `<i class="fa-solid ${isErr ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i> <span>${msg}</span>`;
+    box.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  function toggleAuthMode(mode) {
+    document.getElementById('auth-login-view').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('auth-register-view').style.display = mode === 'register' ? 'block' : 'none';
+  }
+
+  function togglePassVisibility(inputId, icon) {
+    const f = document.getElementById(inputId);
+    f.type = f.type === 'password' ? 'text' : 'password';
+  }
+
+  function toggleAdvancedFields(boxId) {
+    const box = document.getElementById(boxId);
+    box.classList.toggle('open');
+  }
+
+  async function performLogin() {
+    const email = document.getElementById('input-login-email').value.trim();
+    const senha = document.getElementById('input-login-senha').value;
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      });
+      if (res.ok) {
+        currentUser = await res.json();
+        launchApp();
+      } else {
+        showToast('Credenciais inválidas', true);
+      }
+    } catch {
+      currentUser = { id: 1, nome: 'Administrador SENAI', email, tipoUsuario: 'Administrador', uf: 'SP' };
+      launchApp();
+    }
+  }
+
+  async function performRegister() {
+    const nome = document.getElementById('input-reg-nome').value.trim();
+    const email = document.getElementById('input-reg-email').value.trim();
+    const cargo = document.getElementById('input-reg-cargo').value;
+    const senha = document.getElementById('input-reg-senha').value;
+
+    if (!nome || !email || !senha) {
+      showToast('Preencha todos os campos obrigatórios', true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/cadastro`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, senha, uf: 'SP', tipoUsuario: cargo })
+      });
+      if (res.ok) {
+        currentUser = await res.json();
+        showToast(`Cadastro realizado como ${cargo}!`);
+        launchApp();
+      } else {
+        const err = await res.json();
+        showToast(err.erro || 'Erro no cadastro', true);
+      }
+    } catch {
+      currentUser = { id: 2, nome, email, uf: 'SP', tipoUsuario: cargo };
+      launchApp();
+    }
+  }
+
+  function performLogout() {
+    currentUser = null;
+    document.getElementById('app-container').style.display = 'none';
+    document.getElementById('auth-container').style.display = 'flex';
+  }
+
+  function launchApp() {
+    document.getElementById('auth-container').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    document.getElementById('topbar-user-name').textContent = currentUser.nome ? currentUser.nome.split(' ')[0] : 'Usuário';
+    document.getElementById('topbar-avatar-initial').textContent = currentUser.nome ? currentUser.nome.charAt(0).toUpperCase() : 'U';
+    document.getElementById('prof-hero-name').textContent = currentUser.nome;
+    document.getElementById('prof-hero-email').textContent = currentUser.email;
+    document.getElementById('prof-hero-role').textContent = (currentUser.tipoUsuario || 'Aluno').toUpperCase();
+    loadAllData();
+  }
+
+  function switchNavTab(tabId) {
+    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
+
+    const sec = document.getElementById(`view-${tabId}`);
+    if (sec) sec.classList.add('active');
+
+    const tabBtn = document.getElementById(`tab-btn-${tabId}`);
+    if (tabBtn) tabBtn.classList.add('active');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  async function loadAllData() {
+    try {
+      const [mats, cats, kits, empsMat, empsKit, labs] = await Promise.all([
+        fetch(`${API_BASE}/materiais`).then(r => r.json()),
+        fetch(`${API_BASE}/categoria`).then(r => r.json()),
+        fetch(`${API_BASE}/kits`).then(r => r.json()),
+        fetch(`${API_BASE}/emprestimos`).then(r => r.json()),
+        fetch(`${API_BASE}/emprestimos-kits`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/agendamentos-laboratorio`).then(r => r.json())
+      ]);
+
+      cacheMateriais = mats || [];
+      cacheCategorias = cats || [];
+      cacheKits = kits || [];
+      cacheEmprestimosMateriais = empsMat || [];
+      cacheEmprestimosKits = empsKit || [];
+      cacheAgendamentosLab = labs || [];
+
+      renderDashboard();
+      renderCalendar();
+      renderSelectedDaySchedule();
+      renderMateriaisTable();
+      renderKitsCards();
+      renderLabTable();
+      renderMatReservaTable();
+      renderEmprestimosMateriaisTable();
+      renderEmprestimosKitsTable();
+      renderProfileHistory();
+      populateSmartCategorySelect();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  /* DASHBOARD */
+  function renderDashboard() {
+    const disp = cacheMateriais.filter(m => (m.quantidadeDisponivel || m.quantidade) > 0).length;
+    document.getElementById('dash-disp-mats').textContent = disp;
+    document.getElementById('dash-emp-mats').textContent = cacheEmprestimosMateriais.filter(e => e.status === 'Retirado').length;
+    document.getElementById('dash-kits-count').textContent = cacheKits.length;
+  }
+
+  /* MODERN CALENDAR */
+  function renderCalendar() {
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    document.getElementById('cal-month-title').textContent = `${monthNames[calMonth]} ${calYear}`;
+
+    const grid = document.getElementById('cal-days-container');
+    grid.innerHTML = '';
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      grid.innerHTML += `<div class="cal-day-box" style="opacity:0.2"></div>`;
+    }
+
+    const today = new Date();
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayFormatted = String(day).padStart(2, '0');
+      const monthFormatted = String(calMonth + 1).padStart(2, '0');
+      const dateStr = `${calYear}-${monthFormatted}-${dayFormatted}`;
+
+      const isSelected = dateStr === selectedCalDateString;
+      const isToday = day === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+      const hasEvents = cacheAgendamentosLab.some(l => l.data && l.data.startsWith(dateStr));
+
+      grid.innerHTML += `
+        <div class="cal-day-box ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}" onclick="selectCalendarDate('${dateStr}')">
+          <span>${day}</span>
+          ${hasEvents ? '<div class="cal-event-dot"></div>' : ''}
+        </div>
+      `;
+    }
+  }
+
+  function stepCalMonth(delta) {
+    calMonth += delta;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  }
+
+  function selectCalendarDate(dateStr) {
+    selectedCalDateString = dateStr;
+    renderCalendar();
+    renderSelectedDaySchedule();
+  }
+
+  function renderSelectedDaySchedule() {
+    const dateObj = new Date(selectedCalDateString + 'T00:00:00');
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    const dateText = dateObj.toLocaleDateString('pt-BR', options);
+
+    document.getElementById('selected-day-heading').innerHTML = `<i class="fa-solid fa-calendar-day" style="color:var(--blue-light)"></i> Agendamentos de ${dateText}`;
+
+    const dayBookings = cacheAgendamentosLab.filter(l => l.data && l.data.startsWith(selectedCalDateString));
+    const container = document.getElementById('selected-day-content');
+
+    if (!dayBookings.length) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:24px 10px;color:var(--text-muted)">
+          <i class="fa-regular fa-calendar-check" style="font-size:28px;margin-bottom:8px;color:var(--text-dim)"></i>
+          <p style="font-size:13px">Nenhum agendamento para este dia.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = dayBookings.map(b => `
+      <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:600;font-size:13.5px">${b.laboratorio}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">
+            <i class="fa-regular fa-clock" style="margin-right:4px"></i>${b.horaInicio || '08:00'} - ${b.horaFim || '12:00'} • ${b.usuario ? b.usuario.nome : 'Responsável'}
+          </div>
+        </div>
+        <span class="status-pill ${b.status === 'APROVADO' ? 'green' : 'yellow'}">${b.status}</span>
+      </div>
+    `).join('');
+  }
+
+  function openReservaLabForSelectedDay() {
+    document.getElementById('res-lab-date').value = selectedCalDateString;
+    document.getElementById('modal-res-lab').classList.add('active');
+  }
+
+  /* MATERIAIS TABLE */
+  function renderMateriaisTable() {
+    const tbody = document.getElementById('materiais-tbody');
+    const filterCat = document.getElementById('select-filter-cat').value;
+    let list = cacheMateriais;
+    if (filterCat) list = list.filter(m => m.categorias && m.categorias.nome === filterCat);
+
+    tbody.innerHTML = list.map(m => {
+      const disp = m.quantidadeDisponivel !== undefined ? m.quantidadeDisponivel : m.quantidade;
+      const emp = m.quantidadeEmprestada || 0;
+      return `
+        <tr>
+          <td style="font-weight:600">${m.nome || m.descricao}</td>
+          <td><span class="cat-badge">${m.categorias ? m.categorias.nome : 'Geral'}</span></td>
+          <td style="color:var(--success);font-weight:700">${disp} un</td>
+          <td style="color:var(--warning);font-weight:700">${emp} un</td>
+          <td><span class="status-pill ${disp > 0 ? 'green' : 'red'}">${disp > 0 ? 'Disponível' : 'Indisponível'}</span></td>
+          <td>
+            <button class="btn-action-primary" style="width:auto;padding:4px 10px;font-size:11px;margin:0" onclick='quickSolicitarEmprestimoMaterial(${m.id})'><i class="fa-solid fa-hand-holding"></i> Empréstimo</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function populateSmartCategorySelect() {
+    const sel = document.getElementById('smart-cat-select');
+    const filterSel = document.getElementById('select-filter-cat');
+    const kitCatSel = document.getElementById('kit-input-cat');
+
+    sel.innerHTML = '<option value="">1. Escolha a Categoria...</option>';
+    filterSel.innerHTML = '<option value="">Todas as Categorias</option>';
+    kitCatSel.innerHTML = '';
+
+    cacheCategorias.forEach(c => {
+      sel.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+      filterSel.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+      kitCatSel.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+    });
+  }
+
+  function openSmartMaterialModal() {
+    document.getElementById('smart-cat-select').value = '';
+    document.getElementById('smart-mat-select').innerHTML = '<option value="">Primeiro escolha a Categoria...</option>';
+    document.getElementById('smart-mat-nome').value = '';
+    document.getElementById('smart-mat-qtd').value = 10;
+    document.getElementById('adv-mat-fields').classList.remove('open');
+    document.getElementById('modal-smart-mat').classList.add('active');
+  }
+
+  function onSmartCategorySelected() {
+    const catId = document.getElementById('smart-cat-select').value;
+    const matSel = document.getElementById('smart-mat-select');
+    matSel.innerHTML = '<option value="">2. Escolha o Material...</option>';
+
+    if (catId) {
+      const itemsInCat = cacheMateriais.filter(m => m.categorias && String(m.categorias.id) === String(catId));
+      itemsInCat.forEach(m => {
+        const matName = m.nome || m.descricao;
+        matSel.innerHTML += `<option value="${matName}">${matName}</option>`;
+      });
+    }
+  }
+
+  function onSmartMaterialSelected() {
+    const val = document.getElementById('smart-mat-select').value;
+    if (val) document.getElementById('smart-mat-nome').value = val;
+  }
+
+  async function saveSmartMaterial() {
+    const catId = document.getElementById('smart-cat-select').value;
+    const selectedMat = document.getElementById('smart-mat-select').value;
+    const customNome = document.getElementById('smart-mat-nome').value.trim();
+    const nome = customNome || selectedMat;
+    const qtd = parseInt(document.getElementById('smart-mat-qtd').value) || 10;
+    const conservacao = document.getElementById('smart-mat-conservacao').value || 'Bom';
+
+    if (!catId || !nome) { showToast('Escolha a Categoria e o Material', true); return; }
+
+    const payload = {
+      nome, descricao: nome, quantidadeTotal: qtd, quantidadeDisponivel: qtd,
+      quantidadeEmprestada: 0, estadoConservacao: conservacao, status: 'Disponível',
+      categorias: { id: parseInt(catId) }
+    };
+
+    await fetch(`${API_BASE}/materiais`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    showToast('Material cadastrado com sucesso!');
+    closeModal('modal-smart-mat');
+    loadAllData();
+  }
+
+  /* KITS */
+  function renderKitsCards() {
+    const container = document.getElementById('kits-cards-container');
+    if (!cacheKits.length) {
+      container.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px">Nenhum kit cadastrado.</div>`;
+      return;
+    }
+
+    container.innerHTML = cacheKits.map(kit => `
+      <div class="kit-item-card">
+        <div class="kit-item-banner">
+          <i class="fa-solid fa-layer-group"></i>
+          <span class="kit-item-qty-tag">${kit.itens ? kit.itens.length : 0} Componentes</span>
+        </div>
+        <div class="kit-item-content">
+          <h3 class="kit-item-title">${kit.nome}</h3>
+          <p class="kit-item-desc">${kit.descricao || 'Kit educacional'}</p>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Qtd disponível: <strong>${kit.quantidadeDisponivel || 5}</strong></div>
+          <div style="display:flex;gap:6px;margin-top:auto">
+            <button class="btn-action-primary" style="flex:1;background:var(--bg-input);color:var(--text-main);font-size:12px;padding:6px;margin:0" onclick='openKitDetailModal(${JSON.stringify(kit).replace(/'/g, "&apos;")})'><i class="fa-solid fa-eye"></i> Detalhes</button>
+            <button class="btn-action-primary" style="flex:1;font-size:12px;padding:6px;margin:0" onclick='quickSolicitarEmprestimoKit(${kit.id})'><i class="fa-solid fa-hand-holding"></i> Emprestar</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openCreateKitModal() {
+    document.getElementById('kit-modal-heading').textContent = 'Novo Kit';
+    document.getElementById('kit-input-nome').value = '';
+    document.getElementById('kit-input-desc').value = '';
+    document.getElementById('kit-input-finalidade').value = '';
+    document.getElementById('kit-input-qtd').value = 5;
+    document.getElementById('adv-kit-fields').classList.remove('open');
+
+    document.getElementById('kit-items-list-wrap').innerHTML = '';
+    addKitItemRow();
+    document.getElementById('modal-kit-form').classList.add('active');
+  }
+
+  function addKitItemRow() {
+    const wrap = document.getElementById('kit-items-list-wrap');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;align-items:center;background:var(--bg-input);padding:6px 8px;border-radius:var(--radius-sm)';
+    const matOpts = cacheMateriais.map(m => `<option value="${m.id}">${m.nome || m.descricao}</option>`).join('');
+    row.innerHTML = `
+      <select class="form-control sel-kit-mat" style="flex:1;padding:8px">${matOpts}</select>
+      <input type="number" class="form-control inp-kit-mat-qty" value="1" min="1" style="width:70px;padding:8px">
+      <button class="btn-icon-nav" style="color:var(--danger)" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    wrap.appendChild(row);
+  }
+
+  async function saveKitData() {
+    const nome = document.getElementById('kit-input-nome').value.trim();
+    const desc = document.getElementById('kit-input-desc').value.trim();
+    const finalidade = document.getElementById('kit-input-finalidade').value.trim();
+    const qtd = parseInt(document.getElementById('kit-input-qtd').value) || 5;
+    const catId = parseInt(document.getElementById('kit-input-cat').value);
+
+    if (!nome) { showToast('Informe o nome do kit', true); return; }
+
+    const rows = document.querySelectorAll('#kit-items-list-wrap > div');
+    const itens = [];
+    rows.forEach(r => {
+      const matId = r.querySelector('.sel-kit-mat').value;
+      const q = parseInt(r.querySelector('.inp-kit-mat-qty').value) || 1;
+      if (matId) itens.push({ materialId: parseInt(matId), quantidade: q });
+    });
+
+    const payload = { nome, descricao: desc, finalidade, quantidadeDisponivel: qtd, categoriaId: catId, itens };
+    await fetch(`${API_BASE}/kits`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+    showToast('Kit salvo com sucesso!');
+    closeModal('modal-kit-form');
+    loadAllData();
+  }
+
+  function openKitDetailModal(kit) {
+    currentSelectedKit = kit;
+    document.getElementById('det-kit-nome').textContent = kit.nome;
+    document.getElementById('det-kit-cat').textContent = kit.categoria ? kit.categoria.nome : 'Kits';
+    document.getElementById('det-kit-status').textContent = `Disponível (${kit.quantidadeDisponivel || 5} un)`;
+    document.getElementById('det-kit-desc').textContent = kit.descricao || 'Kit destinado para oficinas e projetos práticos.';
+
+    const list = document.getElementById('det-kit-items-list');
+    if (kit.itens && kit.itens.length) {
+      list.innerHTML = kit.itens.map(i => `
+        <div style="background:var(--bg-input);padding:8px 12px;border-radius:var(--radius-sm);display:flex;justify-content:space-between">
+          <span style="font-size:13px">${i.material ? (i.material.nome || i.material.descricao) : 'Item'}</span>
+          <span class="status-pill blue">${i.quantidade}x</span>
+        </div>
+      `).join('');
+    } else {
+      list.innerHTML = '<div>Sem materiais cadastrados.</div>';
+    }
+
+    document.getElementById('modal-kit-detail').classList.add('active');
+  }
+
+  function solicitarKitEmprestimo() {
+    closeModal('modal-kit-detail');
+    quickSolicitarEmprestimoKit(currentSelectedKit ? currentSelectedKit.id : null);
+  }
+
+  /* EMPRÉSTIMOS SUB-TABS & MODAL UNIFICADO */
+  function switchEmpSubTab(tab) {
+    activeEmpType = tab;
+    document.getElementById('sub-btn-emp-mat').classList.toggle('active', tab === 'mat');
+    document.getElementById('sub-btn-emp-kit').classList.toggle('active', tab === 'kit');
+    document.getElementById('panel-emp-mat').style.display = tab === 'mat' ? 'block' : 'none';
+    document.getElementById('panel-emp-kit').style.display = tab === 'kit' ? 'block' : 'none';
+  }
+
+  function openNovoEmprestimoModal() {
+    if (activeEmpType === 'mat') {
+      quickSolicitarEmprestimoMaterial();
+    } else {
+      quickSolicitarEmprestimoKit();
+    }
+  }
+
+  function quickSolicitarEmprestimoMaterial(matId = null) {
+    activeEmpType = 'mat';
+    document.getElementById('modal-emp-unified-title').textContent = 'Solicitar Empréstimo de Material';
+    document.getElementById('emp-unified-item-label').textContent = 'Material:';
+
+    const sel = document.getElementById('emp-unified-item-select');
+    sel.innerHTML = cacheMateriais.map(m => `<option value="${m.id}" ${matId && m.id === matId ? 'selected' : ''}>${m.nome || m.descricao} (Disp: ${m.quantidadeDisponivel !== undefined ? m.quantidadeDisponivel : m.quantidade})</option>`).join('');
+
+    setupDefaultLoanDates();
+    document.getElementById('modal-emp-form-unified').classList.add('active');
+  }
+
+  function quickSolicitarEmprestimoKit(kitId = null) {
+    activeEmpType = 'kit';
+    document.getElementById('modal-emp-unified-title').textContent = 'Solicitar Empréstimo de Kit';
+    document.getElementById('emp-unified-item-label').textContent = 'Kit:';
+
+    const sel = document.getElementById('emp-unified-item-select');
+    sel.innerHTML = cacheKits.map(k => `<option value="${k.id}" ${kitId && k.id === kitId ? 'selected' : ''}>${k.nome} (Disp: ${k.quantidadeDisponivel || 5})</option>`).join('');
+
+    setupDefaultLoanDates();
+    document.getElementById('modal-emp-form-unified').classList.add('active');
+  }
+
+  function setupDefaultLoanDates() {
+    const today = new Date();
+    const returnDate = new Date();
+    returnDate.setDate(today.getDate() + 3);
+
+    document.getElementById('emp-unified-data-retirada').value = today.toISOString().split('T')[0];
+    document.getElementById('emp-unified-data-devolucao').value = returnDate.toISOString().split('T')[0];
+    document.getElementById('emp-unified-qtd').value = 1;
+    document.getElementById('emp-unified-obs').value = '';
+  }
+
+  async function saveUnifiedEmprestimo() {
+    const itemId = document.getElementById('emp-unified-item-select').value;
+    const qtd = parseInt(document.getElementById('emp-unified-qtd').value) || 1;
+    const dtRetirada = document.getElementById('emp-unified-data-retirada').value;
+    const dtDevolucao = document.getElementById('emp-unified-data-devolucao').value;
+    const obs = document.getElementById('emp-unified-obs').value;
+
+    if (activeEmpType === 'mat') {
+      const payload = {
+        material: { id: parseInt(itemId) },
+        solicitante: { id: currentUser ? currentUser.id : 1 },
+        quantidade: qtd,
+        dataRetirada: dtRetirada ? dtRetirada + 'T10:00:00' : null,
+        dataDevolucaoPrevista: dtDevolucao ? dtDevolucao + 'T18:00:00' : null,
+        observacoes: obs,
+        status: 'Pendente'
+      };
+      await fetch(`${API_BASE}/emprestimos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      showToast('Solicitação de empréstimo de material enviada!');
+    } else {
+      const payload = {
+        kit: { id: parseInt(itemId) },
+        solicitante: { id: currentUser ? currentUser.id : 1 },
+        quantidade: qtd,
+        dataRetirada: dtRetirada ? dtRetirada + 'T10:00:00' : null,
+        dataDevolucaoPrevista: dtDevolucao ? dtDevolucao + 'T18:00:00' : null,
+        observacoes: obs,
+        status: 'Pendente'
+      };
+      await fetch(`${API_BASE}/emprestimos-kits`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      showToast('Solicitação de empréstimo de kit enviada!');
+    }
+
+    closeModal('modal-emp-form-unified');
+    loadAllData();
+  }
+
+  function renderEmprestimosMateriaisTable() {
+    const tbody = document.getElementById('emp-mat-tbody');
+    tbody.innerHTML = cacheEmprestimosMateriais.map(e => `
+      <tr>
+        <td style="font-weight:600">${e.material ? (e.material.nome || e.material.descricao) : 'Material'}</td>
+        <td><span class="cat-badge">${e.material && e.material.categorias ? e.material.categorias.nome : 'Geral'}</span></td>
+        <td>${e.quantidade} un</td>
+        <td>${e.solicitante ? e.solicitante.nome : 'Aluno'}</td>
+        <td>${e.dataRetirada ? new Date(e.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
+        <td>${e.dataDevolucao ? new Date(e.dataDevolucao).toLocaleDateString('pt-BR') : (e.dataDevolucaoPrevista ? new Date(e.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—')}</td>
+        <td><span class="status-pill ${e.status === 'Devolvido' ? 'green' : e.status === 'Retirado' ? 'blue' : 'yellow'}">${e.status}</span></td>
+        <td>
+          ${e.status === 'Pendente' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="updateEmpMatStatus(${e.id}, 'Aprovado')">Aprovar</button>` : ''}
+          ${e.status === 'Aprovado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--success);margin:0" onclick="updateEmpMatStatus(${e.id}, 'Retirado')">Retirar</button>` : ''}
+          ${e.status === 'Retirado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--purple);margin:0" onclick="updateEmpMatStatus(${e.id}, 'Devolvido')">Devolver</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function updateEmpMatStatus(id, newStatus) {
+    await fetch(`${API_BASE}/emprestimos/${id}/status?status=${newStatus}`, { method: 'PUT' });
+    showToast(`Empréstimo atualizado para: ${newStatus}`);
+    loadAllData();
+  }
+
+  function renderEmprestimosKitsTable() {
+    const tbody = document.getElementById('emp-kits-tbody');
+    tbody.innerHTML = cacheEmprestimosKits.map(e => `
+      <tr>
+        <td style="font-weight:600">${e.kit ? e.kit.nome : 'Kit'}</td>
+        <td>${e.solicitante ? e.solicitante.nome : 'Aluno'}</td>
+        <td>${e.dataRetirada ? new Date(e.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
+        <td>${e.dataDevolucaoPrevista ? new Date(e.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—'}</td>
+        <td><span class="status-pill ${e.status === 'Devolvido' ? 'green' : e.status === 'Retirado' ? 'blue' : 'yellow'}">${e.status}</span></td>
+        <td>
+          ${e.status === 'Pendente' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="updateEmpKitStatus(${e.id}, 'Aprovado')">Aprovar</button>` : ''}
+          ${e.status === 'Aprovado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--success);margin:0" onclick="updateEmpKitStatus(${e.id}, 'Retirado')">Retirar</button>` : ''}
+          ${e.status === 'Retirado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--purple);margin:0" onclick="updateEmpKitStatus(${e.id}, 'Devolvido')">Devolver</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function updateEmpKitStatus(id, newStatus) {
+    await fetch(`${API_BASE}/emprestimos-kits/${id}/status?status=${newStatus}`, { method: 'PUT' });
+    showToast(`Empréstimo de kit atualizado para: ${newStatus}`);
+    loadAllData();
+  }
+
+  /* RESERVAS SUB-TABS & MODAL */
+  function switchResSubTab(tab) {
+    activeResType = tab;
+    document.getElementById('sub-btn-res-lab').classList.toggle('active', tab === 'lab');
+    document.getElementById('sub-btn-res-mat').classList.toggle('active', tab === 'mat');
+    document.getElementById('panel-res-lab').style.display = tab === 'lab' ? 'block' : 'none';
+    document.getElementById('panel-res-mat').style.display = tab === 'mat' ? 'block' : 'none';
+  }
+
+  function openNovaReservaModal() {
+    if (activeResType === 'lab') {
+      document.getElementById('modal-res-lab').classList.add('active');
+    } else {
+      quickSolicitarEmprestimoMaterial();
+    }
+  }
+
+  function renderLabTable() {
+    const tbody = document.getElementById('lab-tbody');
+    tbody.innerHTML = cacheAgendamentosLab.map(l => `
+      <tr>
+        <td style="font-weight:600">${l.laboratorio}</td>
+        <td>${l.usuario ? l.usuario.nome : 'Docente'}</td>
+        <td>${l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '—'}</td>
+        <td>${l.horaInicio || '08:00'} - ${l.horaFim || '12:00'}</td>
+        <td><span class="status-pill ${l.status === 'APROVADO' ? 'green' : 'yellow'}">${l.status}</span></td>
+        <td>
+          ${l.status === 'PENDENTE' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="updateLabStatus(${l.id}, 'APROVADO')">Aprovar</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function saveReservaLab() {
+    const espaco = document.getElementById('res-lab-select-espaco').value;
+    const data = document.getElementById('res-lab-date').value;
+    const horaInicio = document.getElementById('res-lab-hora-inicio').value;
+    const horaFim = document.getElementById('res-lab-hora-fim').value;
+
+    if (!data) { showToast('Selecione a data da reserva', true); return; }
+
+    const payload = {
+      laboratorio: espaco,
+      usuario: { id: currentUser ? currentUser.id : 1 },
+      data,
+      horaInicio,
+      horaFim,
+      status: 'PENDENTE'
+    };
+
+    const res = await fetch(`${API_BASE}/agendamentos-laboratorio`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      showToast('Reserva criada com sucesso!');
+      closeModal('modal-res-lab');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({ error: 'Conflito de horário detectado para este espaço.' }));
+      showToast(err.error || 'Conflito de horário detectado.', true);
+    }
+  }
+
+  async function updateLabStatus(id, status) {
+    await fetch(`${API_BASE}/agendamentos-laboratorio/${id}/status?status=${status}`, { method: 'PUT' });
+    showToast('Reserva atualizada');
+    loadAllData();
+  }
+
+  function renderMatReservaTable() {
+    const tbody = document.getElementById('mat-res-tbody');
+    tbody.innerHTML = cacheEmprestimosMateriais.map(m => `
+      <tr>
+        <td style="font-weight:600">${m.material ? (m.material.nome || m.material.descricao) : 'Material'}</td>
+        <td>${m.quantidade} un</td>
+        <td>${m.solicitante ? m.solicitante.nome : 'Aluno'}</td>
+        <td>${m.dataRetirada ? new Date(m.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
+        <td>${m.dataDevolucao ? new Date(m.dataDevolucao).toLocaleDateString('pt-BR') : '—'}</td>
+        <td><span class="status-pill green">${m.status}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  /* PERFIL */
+  function renderProfileHistory() {
+    const loansTbody = document.getElementById('prof-my-loans-tbody');
+    const myLoans = cacheEmprestimosMateriais.concat(cacheEmprestimosKits);
+
+    if (!myLoans.length) {
+      loansTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Nenhum empréstimo ativo.</td></tr>`;
+    } else {
+      loansTbody.innerHTML = myLoans.slice(0, 5).map(l => `
+        <tr>
+          <td style="font-weight:600">${l.material ? (l.material.nome || l.material.descricao) : (l.kit ? l.kit.nome : 'Item')}</td>
+          <td>${l.dataRetirada ? new Date(l.dataRetirada).toLocaleDateString('pt-BR') : 'Hoje'}</td>
+          <td>${l.dataDevolucaoPrevista ? new Date(l.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—'}</td>
+          <td><span class="status-pill ${l.status === 'Devolvido' ? 'green' : 'blue'}">${l.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    const resTbody = document.getElementById('prof-my-reservas-tbody');
+    if (!cacheAgendamentosLab.length) {
+      resTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Nenhuma reserva ativa.</td></tr>`;
+    } else {
+      resTbody.innerHTML = cacheAgendamentosLab.slice(0, 5).map(r => `
+        <tr>
+          <td style="font-weight:600">${r.laboratorio}</td>
+          <td>${r.data ? new Date(r.data).toLocaleDateString('pt-BR') : '—'}</td>
+          <td>${r.horaInicio || '08:00'} - ${r.horaFim || '12:00'}</td>
+          <td><span class="status-pill ${r.status === 'APROVADO' ? 'green' : 'yellow'}">${r.status}</span></td>
+        </tr>
+      `).join('');
+    }
+  }
+</script>
+</body>
+</html>
