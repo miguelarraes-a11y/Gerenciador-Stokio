@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senai.pi.stokio.models.Materiais;
@@ -63,11 +64,67 @@ public class MateriaisController {
         }
     }
 
+    @PostMapping("/{id}/baixa")
+    public ResponseEntity<?> darBaixa(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+        try {
+            Object qObj = payload.get("quantidade");
+            if (qObj == null) {
+                return ResponseEntity.badRequest().body(Map.of("erro", "Quantidade é obrigatória."));
+            }
+            int quantidade = qObj instanceof Integer ? (Integer) qObj : Integer.parseInt(qObj.toString());
+
+            Integer usuarioId = null;
+            if (payload.containsKey("usuarioId") && payload.get("usuarioId") != null) {
+                Object uObj = payload.get("usuarioId");
+                usuarioId = uObj instanceof Integer ? (Integer) uObj : Integer.parseInt(uObj.toString());
+            }
+
+            String motivo = (String) payload.getOrDefault("motivo", "Baixa de material");
+
+            Materiais atualizado = materiaisService.darBaixa(id, quantidade, usuarioId, motivo);
+            return ResponseEntity.ok(atualizado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro ao realizar baixa: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/repor")
+    public ResponseEntity<?> repor(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+        try {
+            Object qObj = payload.get("quantidade");
+            if (qObj == null) {
+                return ResponseEntity.badRequest().body(Map.of("erro", "Quantidade é obrigatória."));
+            }
+            int quantidade = qObj instanceof Integer ? (Integer) qObj : Integer.parseInt(qObj.toString());
+
+            Integer usuarioId = null;
+            if (payload.containsKey("usuarioId") && payload.get("usuarioId") != null) {
+                Object uObj = payload.get("usuarioId");
+                usuarioId = uObj instanceof Integer ? (Integer) uObj : Integer.parseInt(uObj.toString());
+            }
+
+            String motivo = (String) payload.getOrDefault("motivo", "Reposição de estoque");
+
+            Materiais atualizado = materiaisService.repor(id, quantidade, usuarioId, motivo);
+            return ResponseEntity.ok(atualizado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro ao repor estoque: " + e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletar(@PathVariable Integer id) {
         try {
             materiaisService.deletar(id);
             return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("erro", e.getMessage()));
         }

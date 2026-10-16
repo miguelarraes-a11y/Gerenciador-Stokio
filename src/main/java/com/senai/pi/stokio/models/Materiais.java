@@ -80,6 +80,9 @@ public class Materiais {
     protected void onUpdate() {
         this.ultimaAtualizacao = LocalDateTime.now();
         this.quantidade = this.quantidadeDisponivel;
+        if ("Excluído".equalsIgnoreCase(this.status)) {
+            return;
+        }
         if (this.quantidadeDisponivel <= 0) {
             this.status = "Indisponível";
         } else if ("Indisponível".equals(this.status) && this.quantidadeDisponivel > 0) {

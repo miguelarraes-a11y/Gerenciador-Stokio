@@ -10,4 +10,5 @@ import java.util.List;
 public interface EmprestimoKitRepository extends JpaRepository<EmprestimoKit, Integer> {
     List<EmprestimoKit> findBySolicitanteId(Integer usuarioId);
     List<EmprestimoKit> findByStatus(String status);
+    boolean existsByKitId(Integer kitId);
 }

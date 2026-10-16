@@ -1014,11 +1014,43 @@
 
     <!-- ==================== 3. KITS (SIMPLIFICADO) ==================== -->
     <div class="view-section" id="view-kits">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <h2 style="font-family:'Outfit',sans-serif;font-size:20px">Kits</h2>
-        <button class="btn-action-primary" style="width:auto;padding:7px 16px;margin:0" onclick="openCreateKitModal()"><i class="fa-solid fa-plus"></i> Novo Kit</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div class="sub-tabs-bar" style="margin:0">
+          <button class="sub-tab-btn active" id="sub-btn-kits-disponiveis" onclick="switchKitsSubTab('disponiveis')">Kits Disponíveis</button>
+          <button class="sub-tab-btn" id="sub-btn-kits-solicitacoes" onclick="switchKitsSubTab('solicitacoes')">
+            Solicitações de Kits <span id="badge-solicitacoes-count" class="status-pill yellow" style="display:none;padding:2px 7px;font-size:11px;margin-left:4px">0</span>
+          </button>
+        </div>
+        <button class="btn-action-primary" style="width:auto;padding:7px 16px;margin:0" onclick="openCreateKitModal()"><i class="fa-solid fa-plus"></i> Solicitar Novo Kit</button>
       </div>
-      <div class="kits-cards-grid" id="kits-cards-container"></div>
+
+      <!-- Painel Kits Disponíveis -->
+      <div id="panel-kits-disponiveis">
+        <div class="kits-cards-grid" id="kits-cards-container"></div>
+      </div>
+
+      <!-- Painel Solicitações de Novos Kits -->
+      <div class="panel-box" id="panel-kits-solicitacoes" style="display:none">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--blue-light)"></i> Solicitações de Novos Kits</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Nome do Kit</th>
+                <th>Solicitante</th>
+                <th>Data</th>
+                <th>Materiais</th>
+                <th>Status</th>
+                <th>Avaliador</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="solicitacoes-kits-tbody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- ==================== 4. GERENCIAMENTO DE EMPRÉSTIMOS (CONSULTA E FISCALIZAÇÃO) ==================== -->
@@ -1077,12 +1109,11 @@
       </div>
     </div>
 
-    <!-- ==================== 5. RESERVAS (LABORATÓRIO E MATERIAIS) ==================== -->
+    <!-- ==================== 5. RESERVAS (LABORATÓRIO) ==================== -->
     <div class="view-section" id="view-reservas">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div class="sub-tabs-bar" style="margin:0">
-          <button class="sub-tab-btn active" id="sub-btn-res-lab" onclick="switchResSubTab('lab')">Espaços do Laboratório</button>
-          <button class="sub-tab-btn" id="sub-btn-res-mat" onclick="switchResSubTab('mat')">Materiais</button>
+          <button class="sub-tab-btn active" id="sub-btn-res-lab"><i class="fa-solid fa-flask" style="color:var(--blue-light);margin-right:6px"></i> Espaços do Laboratório</button>
         </div>
         <button class="btn-action-primary" id="btn-nova-res-action" style="width:auto;padding:7px 16px;margin:0" onclick="openNovaReservaModal()"><i class="fa-solid fa-plus"></i> Fazer Reserva</button>
       </div>
@@ -1093,16 +1124,6 @@
           <table class="custom-table">
             <thead><tr><th>Espaço</th><th>Responsável</th><th>Data</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead>
             <tbody id="lab-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Reservas Material -->
-      <div class="panel-box" id="panel-res-mat" style="display:none">
-        <div class="table-responsive">
-          <table class="custom-table">
-            <thead><tr><th>Material</th><th>Qtd</th><th>Solicitante</th><th>Retirada</th><th>Devolução</th><th>Status</th></tr></thead>
-            <tbody id="mat-res-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -1205,11 +1226,11 @@
   </div>
 </div>
 
-<!-- 2. CADASTRO DE KITS SIMPLIFICADO -->
+<!-- 2. SOLICITAÇÃO DE CRIAÇÃO DE KITS -->
 <div class="modal-overlay" id="modal-kit-form">
   <div class="modal-content-box">
     <div class="modal-head">
-      <h3 id="kit-modal-heading">Novo Kit</h3>
+      <h3 id="kit-modal-heading">Solicitar Criação de Kit</h3>
       <button class="btn-modal-close" onclick="closeModal('modal-kit-form')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -1218,7 +1239,7 @@
       <!-- 2. Categoria -->
       <div class="form-group"><label class="form-label">2. Categoria:</label><select id="kit-input-cat" class="form-control"></select></div>
       <!-- 3. Quantidade Disponível -->
-      <div class="form-group"><label class="form-label">3. Quantidade Disponível:</label><input type="number" id="kit-input-qtd" class="form-control" value="5" min="1"></div>
+      <div class="form-group"><label class="form-label">3. Quantidade Inicial:</label><input type="number" id="kit-input-qtd" class="form-control" value="5" min="1"></div>
       
       <!-- 4. Materiais que compõem o kit -->
       <label class="form-label" style="margin-top:10px">4. Materiais Inclusos:</label>
@@ -1236,7 +1257,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-kit-form')">Cancelar</button>
-      <button class="btn-action-primary" style="width:auto;margin:0" onclick="saveKitData()"><i class="fa-solid fa-check"></i> Salvar Kit</button>
+      <button class="btn-action-primary" style="width:auto;margin:0" onclick="saveKitData()"><i class="fa-solid fa-paper-plane"></i> Enviar Solicitação</button>
     </div>
   </div>
 </div>
@@ -1260,7 +1281,92 @@
     </div>
     <div class="modal-actions">
       <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-kit-detail')">Fechar</button>
+      <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;margin:0" onclick="confirmDeleteKit(currentSelectedKit ? currentSelectedKit.id : null, currentSelectedKit ? currentSelectedKit.nome : '')"><i class="fa-solid fa-trash"></i> Excluir Kit</button>
       <button class="btn-action-primary" style="width:auto;margin:0" onclick="solicitarKitEmprestimo()"><i class="fa-solid fa-hand-holding"></i> Solicitar Empréstimo</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO MODAL: BAIXA DE MATERIAIS -->
+<div class="modal-overlay" id="modal-baixa-mat">
+  <div class="modal-content-box">
+    <div class="modal-head">
+      <h3><i class="fa-solid fa-arrow-down" style="color:var(--danger);margin-right:6px"></i> Dar Baixa no Estoque</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-baixa-mat')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="baixa-mat-id">
+      <div class="form-group">
+        <label class="form-label">Material:</label>
+        <div id="baixa-mat-nome" style="font-weight:600;font-size:14px;color:var(--text-main);background:var(--bg-input);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Saldo Disponível:</label>
+        <div id="baixa-mat-disp" style="font-weight:700;font-size:14px;color:var(--blue-light);background:var(--bg-input);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quantidade a Retirar:</label>
+        <input type="number" id="baixa-mat-qtd" class="form-control" value="1" min="1">
+        <span style="font-size:11.5px;color:var(--text-muted);margin-top:4px;display:block">Não é permitido retirar quantidade superior à disponível.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motivo / Observação (Opcional):</label>
+        <input type="text" id="baixa-mat-motivo" class="form-control" placeholder="Ex: Consumo em aula prática, descarte por avaria, etc.">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-baixa-mat')">Cancelar</button>
+      <button class="btn-action-primary" style="background:var(--danger);width:auto;margin:0" onclick="submitBaixaMaterial()"><i class="fa-solid fa-check"></i> Confirmar Baixa</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO MODAL: REPOSIÇÃO DE MATERIAIS -->
+<div class="modal-overlay" id="modal-repor-mat">
+  <div class="modal-content-box">
+    <div class="modal-head">
+      <h3><i class="fa-solid fa-plus" style="color:var(--success);margin-right:6px"></i> Repor Estoque</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-repor-mat')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="repor-mat-id">
+      <div class="form-group">
+        <label class="form-label">Material:</label>
+        <div id="repor-mat-nome" style="font-weight:600;font-size:14px;color:var(--text-main);background:var(--bg-input);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Saldo Atual:</label>
+        <div id="repor-mat-disp" style="font-weight:700;font-size:14px;color:var(--blue-light);background:var(--bg-input);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quantidade a Adicionar:</label>
+        <input type="number" id="repor-mat-qtd" class="form-control" value="5" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Origem / Observação (Opcional):</label>
+        <input type="text" id="repor-mat-motivo" class="form-control" placeholder="Ex: Nova aquisição, devolução extraordinária, etc.">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-repor-mat')">Cancelar</button>
+      <button class="btn-action-primary" style="background:var(--success);width:auto;margin:0" onclick="submitReporMaterial()"><i class="fa-solid fa-check"></i> Confirmar Reposição</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO MODAL: CONFIRMAÇÃO DE EXCLUSÃO -->
+<div class="modal-overlay" id="modal-confirm-delete">
+  <div class="modal-content-box" style="max-width:440px">
+    <div class="modal-head">
+      <h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);margin-right:6px"></i> Confirmar Exclusão</h3>
+      <button class="btn-modal-close" onclick="closeModal('modal-confirm-delete')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-delete-msg" style="font-size:13.5px;color:var(--text-main);line-height:1.5"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-confirm-delete')">Cancelar</button>
+      <button class="btn-action-primary" id="btn-confirm-delete-submit" style="background:var(--danger);width:auto;margin:0"><i class="fa-solid fa-trash"></i> Confirmar Exclusão</button>
     </div>
   </div>
 </div>
@@ -1370,6 +1476,7 @@
   let cacheMateriais = [];
   let cacheCategorias = [];
   let cacheKits = [];
+  let cacheSolicitacoesKits = [];
   let cacheEmprestimosMateriais = [];
   let cacheEmprestimosKits = [];
   let cacheAgendamentosLab = [];
@@ -1378,7 +1485,7 @@
   let calYear = new Date().getFullYear();
   let selectedCalDateString = new Date().toISOString().split('T')[0];
   let activeEmpType = 'mat'; // 'mat' or 'kit'
-  let activeResType = 'lab'; // 'lab' or 'mat'
+  let activeKitsSubTab = 'disponiveis'; // 'disponiveis' or 'solicitacoes'
 
   function showToast(msg, isErr = false) {
     const box = document.getElementById('toast-container');
@@ -1491,10 +1598,11 @@
 
   async function loadAllData() {
     try {
-      const [mats, cats, kits, empsMat, empsKit, labs] = await Promise.all([
+      const [mats, cats, kits, solKits, empsMat, empsKit, labs] = await Promise.all([
         fetch(`${API_BASE}/materiais`).then(r => r.json()),
         fetch(`${API_BASE}/categoria`).then(r => r.json()),
         fetch(`${API_BASE}/kits`).then(r => r.json()),
+        fetch(`${API_BASE}/solicitacoes-kits`).then(r => r.json()).catch(() => []),
         fetch(`${API_BASE}/emprestimos`).then(r => r.json()),
         fetch(`${API_BASE}/emprestimos-kits`).then(r => r.json()).catch(() => []),
         fetch(`${API_BASE}/agendamentos-laboratorio`).then(r => r.json())
@@ -1503,6 +1611,7 @@
       cacheMateriais = mats || [];
       cacheCategorias = cats || [];
       cacheKits = kits || [];
+      cacheSolicitacoesKits = solKits || [];
       cacheEmprestimosMateriais = empsMat || [];
       cacheEmprestimosKits = empsKit || [];
       cacheAgendamentosLab = labs || [];
@@ -1512,8 +1621,8 @@
       renderSelectedDaySchedule();
       renderMateriaisTable();
       renderKitsCards();
+      renderSolicitacoesKitsTable();
       renderLabTable();
-      renderMatReservaTable();
       renderEmprestimosMateriaisTable();
       renderEmprestimosKitsTable();
       renderProfileHistory();
@@ -1529,6 +1638,13 @@
     document.getElementById('dash-disp-mats').textContent = disp;
     document.getElementById('dash-emp-mats').textContent = cacheEmprestimosMateriais.filter(e => e.status === 'Retirado').length;
     document.getElementById('dash-kits-count').textContent = cacheKits.length;
+
+    const pendingCount = cacheSolicitacoesKits.filter(s => s.status === 'Pendente').length;
+    const badge = document.getElementById('badge-solicitacoes-count');
+    if (badge) {
+      badge.textContent = pendingCount;
+      badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+    }
   }
 
   /* MODERN CALENDAR */
@@ -1626,15 +1742,22 @@
     tbody.innerHTML = list.map(m => {
       const disp = m.quantidadeDisponivel !== undefined ? m.quantidadeDisponivel : m.quantidade;
       const emp = m.quantidadeEmprestada || 0;
+      const matName = m.nome || m.descricao;
+      const safeName = (matName || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
       return `
         <tr>
-          <td style="font-weight:600">${m.nome || m.descricao}</td>
+          <td style="font-weight:600">${matName}</td>
           <td><span class="cat-badge">${m.categorias ? m.categorias.nome : 'Geral'}</span></td>
           <td style="color:var(--success);font-weight:700">${disp} un</td>
           <td style="color:var(--warning);font-weight:700">${emp} un</td>
           <td><span class="status-pill ${disp > 0 ? 'green' : 'red'}">${disp > 0 ? 'Disponível' : 'Indisponível'}</span></td>
           <td>
-            <button class="btn-action-primary" style="width:auto;padding:4px 10px;font-size:11px;margin:0" onclick='quickSolicitarEmprestimoMaterial(${m.id})'><i class="fa-solid fa-hand-holding"></i> Empréstimo</button>
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+              <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:4px 8px;font-size:11px;margin:0" onclick="openBaixaMaterialModal(${m.id})" title="Dar baixa no estoque"><i class="fa-solid fa-arrow-down"></i> Baixa</button>
+              <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15);color:#34D399;border:1px solid rgba(16, 185, 129, 0.3);width:auto;padding:4px 8px;font-size:11px;margin:0" onclick="openReporMaterialModal(${m.id})" title="Repor estoque"><i class="fa-solid fa-plus"></i> Repor</button>
+              <button class="btn-action-primary" style="width:auto;padding:4px 8px;font-size:11px;margin:0" onclick='quickSolicitarEmprestimoMaterial(${m.id})' title="Solicitar empréstimo"><i class="fa-solid fa-hand-holding"></i> Empréstimo</button>
+              <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.1);color:var(--text-muted);border:1px solid var(--border);width:auto;padding:4px 8px;font-size:11px;margin:0" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'" onclick="confirmDeleteMaterial(${m.id}, '${safeName}')" title="Excluir material"><i class="fa-solid fa-trash"></i></button>
+            </div>
           </td>
         </tr>
       `;
@@ -1677,23 +1800,31 @@
         const matName = m.nome || m.descricao;
         matSel.innerHTML += `<option value="${matName}">${matName}</option>`;
       });
+      matSel.innerHTML += `<option value="__custom__">+ Outro / Novo Material (digitar nome personalizado)</option>`;
     }
   }
 
   function onSmartMaterialSelected() {
     const val = document.getElementById('smart-mat-select').value;
-    if (val) document.getElementById('smart-mat-nome').value = val;
+    if (val === '__custom__') {
+      document.getElementById('adv-mat-fields').classList.add('open');
+      document.getElementById('smart-mat-nome').value = '';
+      document.getElementById('smart-mat-nome').focus();
+    } else if (val) {
+      document.getElementById('smart-mat-nome').value = val;
+    }
   }
 
   async function saveSmartMaterial() {
     const catId = document.getElementById('smart-cat-select').value;
     const selectedMat = document.getElementById('smart-mat-select').value;
     const customNome = document.getElementById('smart-mat-nome').value.trim();
-    const nome = customNome || selectedMat;
+    const nome = (selectedMat === '__custom__' || !selectedMat) ? customNome : (customNome || selectedMat);
     const qtd = parseInt(document.getElementById('smart-mat-qtd').value) || 10;
     const conservacao = document.getElementById('smart-mat-conservacao').value || 'Bom';
 
-    if (!catId || !nome) { showToast('Escolha a Categoria e o Material', true); return; }
+    if (!catId) { showToast('Selecione uma categoria', true); return; }
+    if (!nome) { showToast('Informe o nome do material', true); return; }
 
     const payload = {
       nome, descricao: nome, quantidadeTotal: qtd, quantidadeDisponivel: qtd,
@@ -1701,18 +1832,166 @@
       categorias: { id: parseInt(catId) }
     };
 
-    await fetch(`${API_BASE}/materiais`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    try {
+      const res = await fetch(`${API_BASE}/materiais`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    showToast('Material cadastrado com sucesso!');
-    closeModal('modal-smart-mat');
-    loadAllData();
+      if (res.ok) {
+        showToast('Material cadastrado com sucesso!');
+        closeModal('modal-smart-mat');
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Erro ao cadastrar material', true);
+      }
+    } catch (e) {
+      showToast('Erro de comunicação ao salvar material', true);
+    }
+  }
+
+  /* MODAL BAIXA MATERIAL */
+  function openBaixaMaterialModal(id) {
+    const mat = cacheMateriais.find(m => m.id === id);
+    if (!mat) return;
+    const disp = mat.quantidadeDisponivel !== undefined ? mat.quantidadeDisponivel : mat.quantidade;
+    if (disp <= 0) {
+      showToast('Este material não possui saldo disponível para baixa.', true);
+      return;
+    }
+    document.getElementById('baixa-mat-id').value = mat.id;
+    document.getElementById('baixa-mat-nome').textContent = mat.nome || mat.descricao;
+    document.getElementById('baixa-mat-disp').textContent = `${disp} un disponíveis`;
+    const inpQtd = document.getElementById('baixa-mat-qtd');
+    inpQtd.value = 1;
+    inpQtd.max = disp;
+    document.getElementById('baixa-mat-motivo').value = '';
+    document.getElementById('modal-baixa-mat').classList.add('active');
+  }
+
+  async function submitBaixaMaterial() {
+    const id = document.getElementById('baixa-mat-id').value;
+    const mat = cacheMateriais.find(m => String(m.id) === String(id));
+    const disp = mat ? (mat.quantidadeDisponivel !== undefined ? mat.quantidadeDisponivel : mat.quantidade) : 0;
+    const qtd = parseInt(document.getElementById('baixa-mat-qtd').value) || 0;
+    const motivo = document.getElementById('baixa-mat-motivo').value.trim();
+
+    if (qtd <= 0) {
+      showToast('Informe uma quantidade válida para retirada.', true);
+      return;
+    }
+    if (qtd > disp) {
+      showToast(`A quantidade retirada (${qtd} un) não pode ser superior à disponível (${disp} un).`, true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/materiais/${id}/baixa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quantidade: qtd,
+          usuarioId: currentUser ? currentUser.id : 1,
+          motivo: motivo || 'Baixa de estoque'
+        })
+      });
+
+      if (res.ok) {
+        showToast(`Baixa de ${qtd} un registrada com sucesso!`);
+        closeModal('modal-baixa-mat');
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Erro ao registrar baixa no estoque', true);
+      }
+    } catch (e) {
+      showToast('Erro de comunicação ao registrar baixa', true);
+    }
+  }
+
+  /* MODAL REPOR MATERIAL */
+  function openReporMaterialModal(id) {
+    const mat = cacheMateriais.find(m => m.id === id);
+    if (!mat) return;
+    const disp = mat.quantidadeDisponivel !== undefined ? mat.quantidadeDisponivel : mat.quantidade;
+    document.getElementById('repor-mat-id').value = mat.id;
+    document.getElementById('repor-mat-nome').textContent = mat.nome || mat.descricao;
+    document.getElementById('repor-mat-disp').textContent = `${disp} un atuais`;
+    document.getElementById('repor-mat-qtd').value = 5;
+    document.getElementById('repor-mat-motivo').value = '';
+    document.getElementById('modal-repor-mat').classList.add('active');
+  }
+
+  async function submitReporMaterial() {
+    const id = document.getElementById('repor-mat-id').value;
+    const qtd = parseInt(document.getElementById('repor-mat-qtd').value) || 0;
+    const motivo = document.getElementById('repor-mat-motivo').value.trim();
+
+    if (qtd <= 0) {
+      showToast('Informe uma quantidade válida para reposição.', true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/materiais/${id}/repor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quantidade: qtd,
+          usuarioId: currentUser ? currentUser.id : 1,
+          motivo: motivo || 'Reposição de estoque'
+        })
+      });
+
+      if (res.ok) {
+        showToast(`Reposição de ${qtd} un registrada com sucesso!`);
+        closeModal('modal-repor-mat');
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Erro ao registrar reposição no estoque', true);
+      }
+    } catch (e) {
+      showToast('Erro de comunicação ao repor estoque', true);
+    }
+  }
+
+  /* CONFIRMAR EXCLUSÃO DE MATERIAL */
+  function confirmDeleteMaterial(id, nome) {
+    document.getElementById('confirm-delete-msg').innerHTML = `Tem certeza que deseja excluir o material <strong>"${nome}"</strong>?<br><br><span style="color:var(--text-muted);font-size:12px">Esta ação não poderá ser desfeita e removerá o item do estoque ativo.</span>`;
+    const btnConfirm = document.getElementById('btn-confirm-delete-submit');
+    btnConfirm.onclick = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/materiais/${id}`, { method: 'DELETE' });
+        if (res.ok || res.status === 204) {
+          showToast(`Material "${nome}" excluído com sucesso!`);
+          closeModal('modal-confirm-delete');
+          loadAllData();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.erro || 'Não foi possível excluir o material', true);
+        }
+      } catch (e) {
+        showToast('Erro de comunicação ao excluir material', true);
+      }
+    };
+    document.getElementById('modal-confirm-delete').classList.add('active');
   }
 
   /* KITS */
+  function switchKitsSubTab(tab) {
+    activeKitsSubTab = tab;
+    document.getElementById('sub-btn-kits-disponiveis').classList.toggle('active', tab === 'disponiveis');
+    document.getElementById('sub-btn-kits-solicitacoes').classList.toggle('active', tab === 'solicitacoes');
+    document.getElementById('panel-kits-disponiveis').style.display = tab === 'disponiveis' ? 'block' : 'none';
+    document.getElementById('panel-kits-solicitacoes').style.display = tab === 'solicitacoes' ? 'block' : 'none';
+    if (tab === 'solicitacoes') {
+      renderSolicitacoesKitsTable();
+    }
+  }
+
   function renderKitsCards() {
     const container = document.getElementById('kits-cards-container');
     if (!cacheKits.length) {
@@ -1720,27 +1999,147 @@
       return;
     }
 
-    container.innerHTML = cacheKits.map(kit => `
-      <div class="kit-item-card">
-        <div class="kit-item-banner">
-          <i class="fa-solid fa-layer-group"></i>
-          <span class="kit-item-qty-tag">${kit.itens ? kit.itens.length : 0} Componentes</span>
-        </div>
-        <div class="kit-item-content">
-          <h3 class="kit-item-title">${kit.nome}</h3>
-          <p class="kit-item-desc">${kit.descricao || 'Kit educacional'}</p>
-          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Qtd disponível: <strong>${kit.quantidadeDisponivel || 5}</strong></div>
-          <div style="display:flex;gap:6px;margin-top:auto">
-            <button class="btn-action-primary" style="flex:1;background:var(--bg-input);color:var(--text-main);font-size:12px;padding:6px;margin:0" onclick='openKitDetailModal(${JSON.stringify(kit).replace(/'/g, "&apos;")})'><i class="fa-solid fa-eye"></i> Detalhes</button>
-            <button class="btn-action-primary" style="flex:1;font-size:12px;padding:6px;margin:0" onclick='quickSolicitarEmprestimoKit(${kit.id})'><i class="fa-solid fa-hand-holding"></i> Emprestar</button>
+    container.innerHTML = cacheKits.map(kit => {
+      const safeKitName = (kit.nome || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      return `
+        <div class="kit-item-card">
+          <div class="kit-item-banner">
+            <i class="fa-solid fa-layer-group"></i>
+            <span class="kit-item-qty-tag">${kit.itens ? kit.itens.length : 0} Componentes</span>
+          </div>
+          <div class="kit-item-content">
+            <h3 class="kit-item-title">${kit.nome}</h3>
+            <p class="kit-item-desc">${kit.descricao || 'Kit educacional'}</p>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Qtd disponível: <strong>${kit.quantidadeDisponivel || 5}</strong></div>
+            <div style="display:flex;gap:6px;margin-top:auto">
+              <button class="btn-action-primary" style="flex:1;background:var(--bg-input);color:var(--text-main);font-size:12px;padding:6px;margin:0" onclick='openKitDetailModal(${JSON.stringify(kit).replace(/'/g, "&apos;")})'><i class="fa-solid fa-eye"></i> Detalhes</button>
+              <button class="btn-action-primary" style="flex:1;font-size:12px;padding:6px;margin:0" onclick='quickSolicitarEmprestimoKit(${kit.id})'><i class="fa-solid fa-hand-holding"></i> Emprestar</button>
+              <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.12);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:6px 10px;font-size:12px;margin:0" title="Excluir Kit" onclick="confirmDeleteKit(${kit.id}, '${safeKitName}')"><i class="fa-solid fa-trash"></i></button>
+            </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+  }
+
+  function renderSolicitacoesKitsTable() {
+    const tbody = document.getElementById('solicitacoes-kits-tbody');
+    if (!tbody) return;
+
+    if (!cacheSolicitacoesKits.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">Nenhuma solicitação de kit registrada.</td></tr>`;
+      return;
+    }
+
+    const isAdmin = currentUser && currentUser.tipoUsuario && currentUser.tipoUsuario.toLowerCase().includes('admin');
+
+    tbody.innerHTML = cacheSolicitacoesKits.map(s => {
+      const dataStr = s.dataSolicitacao ? new Date(s.dataSolicitacao).toLocaleDateString('pt-BR') : '—';
+      const itensCount = s.itens ? s.itens.length : 0;
+      const statusPillClass = s.status === 'Aprovada' ? 'green' : (s.status === 'Recusada' ? 'red' : 'yellow');
+
+      let acoesHtml = '';
+      if (s.status === 'Pendente') {
+        if (isAdmin) {
+          acoesHtml = `
+            <div style="display:flex;gap:6px;align-items:center">
+              <button class="btn-action-primary" style="background:var(--success);width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="aprovarSolicitacaoKit(${s.id})" title="Aprovar criação deste kit"><i class="fa-solid fa-check"></i> Aprovar</button>
+              <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="recusarSolicitacaoKit(${s.id})" title="Recusar criação deste kit"><i class="fa-solid fa-xmark"></i> Recusar</button>
+            </div>
+          `;
+        } else {
+          acoesHtml = `<span style="font-size:11.5px;color:var(--text-muted)"><i class="fa-solid fa-hourglass-half" style="color:var(--warning);margin-right:4px"></i> Aguardando</span>`;
+        }
+      } else {
+        acoesHtml = `<span style="font-size:11.5px;color:var(--text-dim)">Finalizada</span>`;
+      }
+
+      const avaliadorInfo = s.aprovador ? s.aprovador.nome : (s.status === 'Pendente' ? '—' : 'Administrador');
+
+      return `
+        <tr>
+          <td style="font-weight:600">
+            <div>${s.nome}</div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:normal">${s.descricao || s.finalidade || ''}</div>
+          </td>
+          <td>${s.solicitante ? s.solicitante.nome : 'Usuário'}</td>
+          <td>${dataStr}</td>
+          <td><span class="cat-badge">${itensCount} itens</span></td>
+          <td><span class="status-pill ${statusPillClass}">${s.status}</span></td>
+          <td style="font-size:12px">${avaliadorInfo}</td>
+          <td>${acoesHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function aprovarSolicitacaoKit(id) {
+    if (!currentUser || !currentUser.tipoUsuario || !currentUser.tipoUsuario.toLowerCase().includes('admin')) {
+      showToast('Apenas administradores podem aprovar solicitações.', true);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/solicitacoes-kits/${id}/aprovar?adminId=${currentUser.id}`, { method: 'PUT' });
+      if (res.ok) {
+        showToast('Solicitação aprovada! O kit foi adicionado aos kits disponíveis.');
+        await loadAllData();
+        switchKitsSubTab('disponiveis');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Erro ao aprovar solicitação', true);
+      }
+    } catch (e) {
+      showToast('Erro de comunicação com o servidor', true);
+    }
+  }
+
+  async function recusarSolicitacaoKit(id) {
+    if (!currentUser || !currentUser.tipoUsuario || !currentUser.tipoUsuario.toLowerCase().includes('admin')) {
+      showToast('Apenas administradores podem recusar solicitações.', true);
+      return;
+    }
+    const motivo = prompt('Informe a justificativa da recusa (opcional):') || '';
+    try {
+      const res = await fetch(`${API_BASE}/solicitacoes-kits/${id}/recusar?adminId=${currentUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ justificativa: motivo })
+      });
+      if (res.ok) {
+        showToast('Solicitação de kit recusada.');
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Erro ao recusar solicitação', true);
+      }
+    } catch (e) {
+      showToast('Erro de comunicação com o servidor', true);
+    }
+  }
+
+  function confirmDeleteKit(id, nome) {
+    closeModal('modal-kit-detail');
+    document.getElementById('confirm-delete-msg').innerHTML = `Tem certeza que deseja excluir o kit <strong>"${nome}"</strong>?<br><br><span style="color:var(--text-muted);font-size:12px">Esta ação removerá o kit dos kits ativos sem comprometer históricos e reservas existentes.</span>`;
+    const btnConfirm = document.getElementById('btn-confirm-delete-submit');
+    btnConfirm.onclick = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/kits/${id}`, { method: 'DELETE' });
+        if (res.ok || res.status === 204) {
+          showToast(`Kit "${nome}" excluído com sucesso!`);
+          closeModal('modal-confirm-delete');
+          loadAllData();
+        } else {
+          showToast('Erro ao excluir kit', true);
+        }
+      } catch (e) {
+        showToast('Erro de comunicação ao excluir kit', true);
+      }
+    };
+    document.getElementById('modal-confirm-delete').classList.add('active');
   }
 
   function openCreateKitModal() {
-    document.getElementById('kit-modal-heading').textContent = 'Novo Kit';
+    document.getElementById('kit-modal-heading').textContent = 'Solicitar Criação de Kit';
     document.getElementById('kit-input-nome').value = '';
     document.getElementById('kit-input-desc').value = '';
     document.getElementById('kit-input-finalidade').value = '';
@@ -1782,12 +2181,35 @@
       if (matId) itens.push({ materialId: parseInt(matId), quantidade: q });
     });
 
-    const payload = { nome, descricao: desc, finalidade, quantidadeDisponivel: qtd, categoriaId: catId, itens };
-    await fetch(`${API_BASE}/kits`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const payload = {
+      nome,
+      descricao: desc,
+      finalidade,
+      quantidadeDisponivel: qtd,
+      categoriaId: catId,
+      solicitanteId: currentUser ? currentUser.id : 1,
+      itens
+    };
 
-    showToast('Kit salvo com sucesso!');
-    closeModal('modal-kit-form');
-    loadAllData();
+    try {
+      const res = await fetch(`${API_BASE}/solicitacoes-kits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        showToast('Solicitação de kit enviada! Aguardando aprovação do administrador.');
+        closeModal('modal-kit-form');
+        await loadAllData();
+        switchKitsSubTab('solicitacoes');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Não foi possível enviar a solicitação', true);
+      }
+    } catch (e) {
+      showToast('Erro de comunicação ao solicitar kit', true);
+    }
   }
 
   function openKitDetailModal(kit) {
@@ -1956,21 +2378,9 @@
     loadAllData();
   }
 
-  /* RESERVAS SUB-TABS & MODAL */
-  function switchResSubTab(tab) {
-    activeResType = tab;
-    document.getElementById('sub-btn-res-lab').classList.toggle('active', tab === 'lab');
-    document.getElementById('sub-btn-res-mat').classList.toggle('active', tab === 'mat');
-    document.getElementById('panel-res-lab').style.display = tab === 'lab' ? 'block' : 'none';
-    document.getElementById('panel-res-mat').style.display = tab === 'mat' ? 'block' : 'none';
-  }
-
+  /* RESERVAS DE LABORATÓRIO */
   function openNovaReservaModal() {
-    if (activeResType === 'lab') {
-      document.getElementById('modal-res-lab').classList.add('active');
-    } else {
-      quickSolicitarEmprestimoMaterial();
-    }
+    document.getElementById('modal-res-lab').classList.add('active');
   }
 
   function renderLabTable() {
@@ -2028,19 +2438,7 @@
     loadAllData();
   }
 
-  function renderMatReservaTable() {
-    const tbody = document.getElementById('mat-res-tbody');
-    tbody.innerHTML = cacheEmprestimosMateriais.map(m => `
-      <tr>
-        <td style="font-weight:600">${m.material ? (m.material.nome || m.material.descricao) : 'Material'}</td>
-        <td>${m.quantidade} un</td>
-        <td>${m.solicitante ? m.solicitante.nome : 'Aluno'}</td>
-        <td>${m.dataRetirada ? new Date(m.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
-        <td>${m.dataDevolucao ? new Date(m.dataDevolucao).toLocaleDateString('pt-BR') : '—'}</td>
-        <td><span class="status-pill green">${m.status}</span></td>
-      </tr>
-    `).join('');
-  }
+
 
   /* PERFIL */
   function renderProfileHistory() {
