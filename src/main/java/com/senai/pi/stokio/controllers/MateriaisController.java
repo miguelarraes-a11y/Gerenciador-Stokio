@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senai.pi.stokio.models.Materiais;
+import com.senai.pi.stokio.models.Usuario;
+import com.senai.pi.stokio.repositories.UsuarioRepository;
 import com.senai.pi.stokio.services.MateriaisService;
 
 @RestController
@@ -27,6 +29,15 @@ public class MateriaisController {
 
     @Autowired
     public MateriaisService materiaisService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    private boolean validarAdmin(Integer userId) {
+        if (userId == null) return true; // Para chamadas locais/testes sem autenticação
+        Usuario u = usuarioRepository.findById(userId).orElse(null);
+        return u != null && u.isAdmin();
+    }
 
     @GetMapping
     public List<Materiais> listar() {
@@ -45,7 +56,13 @@ public class MateriaisController {
     }
 
     @PostMapping
-    public ResponseEntity<?> criar(@RequestBody Materiais material) {
+    public ResponseEntity<?> criar(
+            @RequestParam(required = false) Integer userId,
+            @RequestBody Materiais material) {
+        if (!validarAdmin(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("erro", "Apenas administradores podem cadastrar novos materiais no estoque."));
+        }
         try {
             Materiais criado = materiaisService.salvar(material);
             return ResponseEntity.status(HttpStatus.CREATED).body(criado);
@@ -55,7 +72,14 @@ public class MateriaisController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Integer id, @RequestBody Materiais material) {
+    public ResponseEntity<?> atualizar(
+            @PathVariable Integer id,
+            @RequestParam(required = false) Integer userId,
+            @RequestBody Materiais material) {
+        if (!validarAdmin(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("erro", "Apenas administradores podem editar materiais do estoque."));
+        }
         try {
             Materiais atualizado = materiaisService.atualizar(id, material);
             return ResponseEntity.ok(atualizado);
@@ -65,19 +89,27 @@ public class MateriaisController {
     }
 
     @PostMapping("/{id}/baixa")
-    public ResponseEntity<?> darBaixa(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> darBaixa(
+            @PathVariable Integer id,
+            @RequestParam(required = false) Integer userId,
+            @RequestBody Map<String, Object> payload) {
+        Integer usuarioId = userId;
+        if (payload.containsKey("usuarioId") && payload.get("usuarioId") != null) {
+            Object uObj = payload.get("usuarioId");
+            usuarioId = uObj instanceof Integer ? (Integer) uObj : Integer.parseInt(uObj.toString());
+        }
+
+        if (!validarAdmin(usuarioId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("erro", "Apenas administradores podem dar baixa direta no estoque. Professores devem solicitar empréstimos."));
+        }
+
         try {
             Object qObj = payload.get("quantidade");
             if (qObj == null) {
                 return ResponseEntity.badRequest().body(Map.of("erro", "Quantidade é obrigatória."));
             }
             int quantidade = qObj instanceof Integer ? (Integer) qObj : Integer.parseInt(qObj.toString());
-
-            Integer usuarioId = null;
-            if (payload.containsKey("usuarioId") && payload.get("usuarioId") != null) {
-                Object uObj = payload.get("usuarioId");
-                usuarioId = uObj instanceof Integer ? (Integer) uObj : Integer.parseInt(uObj.toString());
-            }
 
             String motivo = (String) payload.getOrDefault("motivo", "Baixa de material");
 
@@ -92,19 +124,27 @@ public class MateriaisController {
     }
 
     @PostMapping("/{id}/repor")
-    public ResponseEntity<?> repor(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> repor(
+            @PathVariable Integer id,
+            @RequestParam(required = false) Integer userId,
+            @RequestBody Map<String, Object> payload) {
+        Integer usuarioId = userId;
+        if (payload.containsKey("usuarioId") && payload.get("usuarioId") != null) {
+            Object uObj = payload.get("usuarioId");
+            usuarioId = uObj instanceof Integer ? (Integer) uObj : Integer.parseInt(uObj.toString());
+        }
+
+        if (!validarAdmin(usuarioId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("erro", "Apenas administradores podem repor estoque diretamente."));
+        }
+
         try {
             Object qObj = payload.get("quantidade");
             if (qObj == null) {
                 return ResponseEntity.badRequest().body(Map.of("erro", "Quantidade é obrigatória."));
             }
             int quantidade = qObj instanceof Integer ? (Integer) qObj : Integer.parseInt(qObj.toString());
-
-            Integer usuarioId = null;
-            if (payload.containsKey("usuarioId") && payload.get("usuarioId") != null) {
-                Object uObj = payload.get("usuarioId");
-                usuarioId = uObj instanceof Integer ? (Integer) uObj : Integer.parseInt(uObj.toString());
-            }
 
             String motivo = (String) payload.getOrDefault("motivo", "Reposição de estoque");
 
@@ -119,7 +159,13 @@ public class MateriaisController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletar(@PathVariable Integer id) {
+    public ResponseEntity<?> deletar(
+            @PathVariable Integer id,
+            @RequestParam(required = false) Integer userId) {
+        if (!validarAdmin(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("erro", "Apenas administradores podem excluir materiais do estoque."));
+        }
         try {
             materiaisService.deletar(id);
             return ResponseEntity.noContent().build();

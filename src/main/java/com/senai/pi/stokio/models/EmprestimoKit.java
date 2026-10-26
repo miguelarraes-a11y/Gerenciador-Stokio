@@ -35,7 +35,21 @@ public class EmprestimoKit {
     private LocalDateTime dataDevolucaoReal;
 
     @Column(name = "status")
-    private String status = "Pendente"; // Pendente, Aprovado, Retirado, Devolvido, Atrasado, Cancelado
+    private String status = "Pendente"; // Pendente, Aprovado, Recusado, Retirado, Devolvido, Atrasado, Cancelado
+
+    @ManyToOne
+    @JoinColumn(name = "professor_responsavel_id")
+    private Usuario professorResponsavel;
+
+    @ManyToOne
+    @JoinColumn(name = "aprovado_por_id")
+    private Usuario aprovadoPor;
+
+    @Column(name = "data_decisao")
+    private LocalDateTime dataDecisao;
+
+    @Column(name = "motivo_recusa", length = 500)
+    private String motivoRecusa;
 
     @Column(name = "observacoes", length = 1000)
     private String observacoes;
@@ -88,4 +102,16 @@ public class EmprestimoKit {
 
     public String getObservacoes() { return observacoes; }
     public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
+
+    public Usuario getProfessorResponsavel() { return professorResponsavel; }
+    public void setProfessorResponsavel(Usuario professorResponsavel) { this.professorResponsavel = professorResponsavel; }
+
+    public Usuario getAprovadoPor() { return aprovadoPor; }
+    public void setAprovadoPor(Usuario aprovadoPor) { this.aprovadoPor = aprovadoPor; }
+
+    public LocalDateTime getDataDecisao() { return dataDecisao; }
+    public void setDataDecisao(LocalDateTime dataDecisao) { this.dataDecisao = dataDecisao; }
+
+    public String getMotivoRecusa() { return motivoRecusa; }
+    public void setMotivoRecusa(String motivoRecusa) { this.motivoRecusa = motivoRecusa; }
 }

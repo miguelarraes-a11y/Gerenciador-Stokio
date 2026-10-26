@@ -1096,9 +1096,10 @@
             <thead>
               <tr>
                 <th>Nome do Kit</th>
-                <th>Usuário Responsável</th>
+                <th>Solicitante</th>
+                <th>Professor Resp.</th>
                 <th>Data de Retirada</th>
-                <th>Data de Devolução</th>
+                <th>Devolução Prevista</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
@@ -1122,7 +1123,7 @@
       <div class="panel-box" id="panel-res-lab">
         <div class="table-responsive">
           <table class="custom-table">
-            <thead><tr><th>Espaço</th><th>Responsável</th><th>Data</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Espaço</th><th>Solicitante</th><th>Professor Resp.</th><th>Data</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead>
             <tbody id="lab-tbody"></tbody>
           </table>
         </div>
@@ -1160,6 +1161,48 @@
           <table class="custom-table">
             <thead><tr><th>Espaço</th><th>Data</th><th>Horário</th><th>Status</th></tr></thead>
             <tbody id="prof-my-reservas-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Painel Admin: Gerenciamento de Usuários e Permissões -->
+      <div class="panel-box" id="panel-admin-usuarios" style="display:none">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-users-gear" style="color:var(--blue-light)"></i> Gerenciamento de Usuários e Permissões (Admin)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Nível de Acesso (Cargo)</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Painel Admin: Histórico Geral de Movimentações de Estoque -->
+      <div class="panel-box" id="panel-admin-movimentacoes" style="display:none">
+        <div class="panel-box-header">
+          <h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--blue-light)"></i> Histórico Geral de Movimentações de Estoque (Admin)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Material</th>
+                <th>Tipo</th>
+                <th>Quantidade</th>
+                <th>Motivo</th>
+                <th>Responsável</th>
+              </tr>
+            </thead>
+            <tbody id="admin-mov-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -1393,6 +1436,10 @@
           <input type="date" id="emp-unified-data-devolucao" class="form-control">
         </div>
       </div>
+      <div class="form-group" id="emp-unified-prof-group">
+        <label class="form-label" id="emp-unified-prof-label"><i class="fa-solid fa-chalkboard-user"></i> Professor Responsável (Obrigatório para Alunos):</label>
+        <select id="emp-unified-prof-select" class="form-control"></select>
+      </div>
       <div class="form-group">
         <label class="form-label">Quantidade:</label>
         <input type="number" id="emp-unified-qtd" class="form-control" value="1" min="1">
@@ -1427,6 +1474,10 @@
           <option value="Sala de Corte a Laser">Sala de Corte a Laser</option>
         </select>
       </div>
+      <div class="form-group" id="res-lab-prof-group">
+        <label class="form-label" id="res-lab-prof-label"><i class="fa-solid fa-chalkboard-user"></i> Professor Responsável (Obrigatório para Alunos):</label>
+        <select id="res-lab-prof-select" class="form-control"></select>
+      </div>
       <div class="form-group"><label class="form-label">Data:</label><input type="date" id="res-lab-date" class="form-control"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="form-group">
@@ -1459,6 +1510,10 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label">Finalidade / Observações:</label>
+        <input type="text" id="res-lab-obs" class="form-control" placeholder="Ex: Aula prática de robótica ou projeto final">
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-action-primary" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);width:auto;margin:0" onclick="closeModal('modal-res-lab')">Cancelar</button>
@@ -1480,6 +1535,9 @@
   let cacheEmprestimosMateriais = [];
   let cacheEmprestimosKits = [];
   let cacheAgendamentosLab = [];
+  let cacheProfessores = [];
+  let cacheUsuarios = [];
+  let cacheMovimentacoes = [];
   let currentSelectedKit = null;
   let calMonth = new Date().getMonth();
   let calYear = new Date().getFullYear();
@@ -1522,12 +1580,14 @@
       });
       if (res.ok) {
         currentUser = await res.json();
+        localStorage.setItem('stokio_current_user', JSON.stringify(currentUser));
         launchApp();
       } else {
         showToast('Credenciais inválidas', true);
       }
     } catch {
       currentUser = { id: 1, nome: 'Administrador SENAI', email, tipoUsuario: 'Administrador', uf: 'SP' };
+      localStorage.setItem('stokio_current_user', JSON.stringify(currentUser));
       launchApp();
     }
   }
@@ -1551,6 +1611,7 @@
       });
       if (res.ok) {
         currentUser = await res.json();
+        localStorage.setItem('stokio_current_user', JSON.stringify(currentUser));
         showToast(`Cadastro realizado como ${cargo}!`);
         launchApp();
       } else {
@@ -1559,12 +1620,14 @@
       }
     } catch {
       currentUser = { id: 2, nome, email, uf: 'SP', tipoUsuario: cargo };
+      localStorage.setItem('stokio_current_user', JSON.stringify(currentUser));
       launchApp();
     }
   }
 
   function performLogout() {
     currentUser = null;
+    localStorage.removeItem('stokio_current_user');
     document.getElementById('app-container').style.display = 'none';
     document.getElementById('auth-container').style.display = 'flex';
   }
@@ -1577,7 +1640,74 @@
     document.getElementById('prof-hero-name').textContent = currentUser.nome;
     document.getElementById('prof-hero-email').textContent = currentUser.email;
     document.getElementById('prof-hero-role').textContent = (currentUser.tipoUsuario || 'Aluno').toUpperCase();
+    applyRolePermissions();
     loadAllData();
+  }
+
+  function applyRolePermissions() {
+    if (!currentUser) return;
+    const role = (currentUser.tipoUsuario || 'Aluno').toLowerCase();
+    const isAdmin = role.includes('admin');
+    const isProf = role.includes('prof') || role.includes('docente');
+    const isAluno = !isAdmin && !isProf;
+
+    // Navigation items
+    const navMat = document.getElementById('tab-btn-materiais');
+    const mobMat = document.querySelector(".mobile-footer-nav button[onclick*='materiais']");
+    if (navMat) navMat.style.display = isAluno ? 'none' : 'inline-flex';
+    if (mobMat) mobMat.style.display = isAluno ? 'none' : 'flex';
+
+    // Materiais View header button
+    const btnNovoMat = document.getElementById('btn-novo-material-smart');
+    if (btnNovoMat) btnNovoMat.style.display = isAdmin ? 'inline-flex' : 'none';
+
+    // Kits View buttons & subtabs
+    const btnNovoKit = document.getElementById('btn-novo-kit-modal');
+    if (btnNovoKit) btnNovoKit.style.display = isAluno ? 'none' : 'inline-flex';
+
+    const subBtnSol = document.getElementById('sub-btn-kits-solicitacoes');
+    if (subBtnSol) subBtnSol.style.display = isAluno ? 'none' : 'inline-flex';
+
+    // Empréstimos View subtabs
+    const subBtnEmpMat = document.getElementById('sub-btn-emp-mat');
+    if (subBtnEmpMat) subBtnEmpMat.style.display = isAluno ? 'none' : 'inline-flex';
+    if (isAluno && activeEmpType === 'mat') {
+      switchEmpSubTab('kit');
+    }
+
+    // Modal forms: "Professor Responsável" field
+    const empProfGroup = document.getElementById('emp-unified-prof-group');
+    if (empProfGroup) empProfGroup.style.display = isAluno ? 'block' : 'none';
+
+    const resProfGroup = document.getElementById('res-lab-prof-group');
+    if (resProfGroup) resProfGroup.style.display = isAluno ? 'block' : 'none';
+
+    // Perfil View admin panels
+    const panelAdminUsers = document.getElementById('panel-admin-usuarios');
+    if (panelAdminUsers) panelAdminUsers.style.display = isAdmin ? 'block' : 'none';
+
+    const panelAdminMov = document.getElementById('panel-admin-movimentacoes');
+    if (panelAdminMov) panelAdminMov.style.display = isAdmin ? 'block' : 'none';
+
+    // If Aluno is currently on an unauthorized tab (e.g. materiais), switch to dashboard
+    const activeSection = document.querySelector('.view-section.active');
+    if (isAluno && activeSection && activeSection.id === 'view-materiais') {
+      switchNavTab('dashboard');
+    }
+  }
+
+  function populateProfessorSelects() {
+    const empSel = document.getElementById('emp-unified-prof-select');
+    const resSel = document.getElementById('res-lab-prof-select');
+    if (!empSel || !resSel) return;
+
+    let options = '<option value="">Selecione o Professor Responsável...</option>';
+    cacheProfessores.forEach(p => {
+      options += `<option value="${p.id}">Prof. ${p.nome}</option>`;
+    });
+
+    empSel.innerHTML = options;
+    resSel.innerHTML = options;
   }
 
   function switchNavTab(tabId) {
@@ -1598,23 +1728,39 @@
 
   async function loadAllData() {
     try {
-      const [mats, cats, kits, solKits, empsMat, empsKit, labs] = await Promise.all([
-        fetch(`${API_BASE}/materiais`).then(r => r.json()),
-        fetch(`${API_BASE}/categoria`).then(r => r.json()),
-        fetch(`${API_BASE}/kits`).then(r => r.json()),
-        fetch(`${API_BASE}/solicitacoes-kits`).then(r => r.json()).catch(() => []),
-        fetch(`${API_BASE}/emprestimos`).then(r => r.json()),
-        fetch(`${API_BASE}/emprestimos-kits`).then(r => r.json()).catch(() => []),
-        fetch(`${API_BASE}/agendamentos-laboratorio`).then(r => r.json())
-      ]);
+      const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+      const isAdmin = role.includes('admin');
 
-      cacheMateriais = mats || [];
-      cacheCategorias = cats || [];
-      cacheKits = kits || [];
-      cacheSolicitacoesKits = solKits || [];
-      cacheEmprestimosMateriais = empsMat || [];
-      cacheEmprestimosKits = empsKit || [];
-      cacheAgendamentosLab = labs || [];
+      const fetches = [
+        fetch(`${API_BASE}/materiais`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/categoria`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/kits`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/solicitacoes-kits`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/emprestimos`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/emprestimos-kits`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/agendamentos-laboratorio`).then(r => r.json()).catch(() => []),
+        fetch(`${API_BASE}/usuario/professores`).then(r => r.json()).catch(() => [])
+      ];
+
+      if (isAdmin) {
+        fetches.push(fetch(`${API_BASE}/usuario`).then(r => r.json()).catch(() => []));
+        fetches.push(fetch(`${API_BASE}/movimentacoes_materiais`).then(r => r.json()).catch(() => []));
+      }
+
+      const results = await Promise.all(fetches);
+      cacheMateriais = results[0] || [];
+      cacheCategorias = results[1] || [];
+      cacheKits = results[2] || [];
+      cacheSolicitacoesKits = results[3] || [];
+      cacheEmprestimosMateriais = results[4] || [];
+      cacheEmprestimosKits = results[5] || [];
+      cacheAgendamentosLab = results[6] || [];
+      cacheProfessores = results[7] || [];
+
+      if (isAdmin) {
+        cacheUsuarios = results[8] || [];
+        cacheMovimentacoes = results[9] || [];
+      }
 
       renderDashboard();
       renderCalendar();
@@ -1627,6 +1773,11 @@
       renderEmprestimosKitsTable();
       renderProfileHistory();
       populateSmartCategorySelect();
+      populateProfessorSelects();
+      if (isAdmin) {
+        renderAdminUsersTable();
+        renderAdminMovimentacoesTable();
+      }
     } catch (e) {
       console.error(e);
     }
@@ -1739,6 +1890,9 @@
     let list = cacheMateriais;
     if (filterCat) list = list.filter(m => m.categorias && m.categorias.nome === filterCat);
 
+    const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+    const isAdmin = role.includes('admin');
+
     tbody.innerHTML = list.map(m => {
       const disp = m.quantidadeDisponivel !== undefined ? m.quantidadeDisponivel : m.quantidade;
       const emp = m.quantidadeEmprestada || 0;
@@ -1753,10 +1907,14 @@
           <td><span class="status-pill ${disp > 0 ? 'green' : 'red'}">${disp > 0 ? 'Disponível' : 'Indisponível'}</span></td>
           <td>
             <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-              <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:4px 8px;font-size:11px;margin:0" onclick="openBaixaMaterialModal(${m.id})" title="Dar baixa no estoque"><i class="fa-solid fa-arrow-down"></i> Baixa</button>
-              <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15);color:#34D399;border:1px solid rgba(16, 185, 129, 0.3);width:auto;padding:4px 8px;font-size:11px;margin:0" onclick="openReporMaterialModal(${m.id})" title="Repor estoque"><i class="fa-solid fa-plus"></i> Repor</button>
+              ${isAdmin ? `
+                <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:4px 8px;font-size:11px;margin:0" onclick="openBaixaMaterialModal(${m.id})" title="Dar baixa no estoque"><i class="fa-solid fa-arrow-down"></i> Baixa</button>
+                <button class="btn-action-primary" style="background:rgba(16, 185, 129, 0.15);color:#34D399;border:1px solid rgba(16, 185, 129, 0.3);width:auto;padding:4px 8px;font-size:11px;margin:0" onclick="openReporMaterialModal(${m.id})" title="Repor estoque"><i class="fa-solid fa-plus"></i> Repor</button>
+              ` : ''}
               <button class="btn-action-primary" style="width:auto;padding:4px 8px;font-size:11px;margin:0" onclick='quickSolicitarEmprestimoMaterial(${m.id})' title="Solicitar empréstimo"><i class="fa-solid fa-hand-holding"></i> Empréstimo</button>
-              <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.1);color:var(--text-muted);border:1px solid var(--border);width:auto;padding:4px 8px;font-size:11px;margin:0" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'" onclick="confirmDeleteMaterial(${m.id}, '${safeName}')" title="Excluir material"><i class="fa-solid fa-trash"></i></button>
+              ${isAdmin ? `
+                <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.1);color:var(--text-muted);border:1px solid var(--border);width:auto;padding:4px 8px;font-size:11px;margin:0" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'" onclick="confirmDeleteMaterial(${m.id}, '${safeName}')" title="Excluir material"><i class="fa-solid fa-trash"></i></button>
+              ` : ''}
             </div>
           </td>
         </tr>
@@ -1999,6 +2157,9 @@
       return;
     }
 
+    const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+    const isAdmin = role.includes('admin');
+
     container.innerHTML = cacheKits.map(kit => {
       const safeKitName = (kit.nome || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
       return `
@@ -2014,7 +2175,9 @@
             <div style="display:flex;gap:6px;margin-top:auto">
               <button class="btn-action-primary" style="flex:1;background:var(--bg-input);color:var(--text-main);font-size:12px;padding:6px;margin:0" onclick='openKitDetailModal(${JSON.stringify(kit).replace(/'/g, "&apos;")})'><i class="fa-solid fa-eye"></i> Detalhes</button>
               <button class="btn-action-primary" style="flex:1;font-size:12px;padding:6px;margin:0" onclick='quickSolicitarEmprestimoKit(${kit.id})'><i class="fa-solid fa-hand-holding"></i> Emprestar</button>
-              <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.12);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:6px 10px;font-size:12px;margin:0" title="Excluir Kit" onclick="confirmDeleteKit(${kit.id}, '${safeKitName}')"><i class="fa-solid fa-trash"></i></button>
+              ${isAdmin ? `
+                <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.12);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:6px 10px;font-size:12px;margin:0" title="Excluir Kit" onclick="confirmDeleteKit(${kit.id}, '${safeKitName}')"><i class="fa-solid fa-trash"></i></button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -2298,19 +2461,46 @@
     const dtDevolucao = document.getElementById('emp-unified-data-devolucao').value;
     const obs = document.getElementById('emp-unified-obs').value;
 
+    const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+    const isAluno = !role.includes('admin') && !role.includes('prof') && !role.includes('docente');
+
     if (activeEmpType === 'mat') {
+      if (isAluno) {
+        showToast('Alunos possuem permissão apenas para solicitar empréstimo de kits pedagógicos.', true);
+        return;
+      }
       const payload = {
         material: { id: parseInt(itemId) },
         solicitante: { id: currentUser ? currentUser.id : 1 },
         quantidade: qtd,
         dataRetirada: dtRetirada ? dtRetirada + 'T10:00:00' : null,
         dataDevolucaoPrevista: dtDevolucao ? dtDevolucao + 'T18:00:00' : null,
-        observacoes: obs,
-        status: 'Pendente'
+        observacoes: obs
       };
-      await fetch(`${API_BASE}/emprestimos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      showToast('Solicitação de empréstimo de material enviada!');
+      const res = await fetch(`${API_BASE}/emprestimos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast('Solicitação de empréstimo de material enviada!');
+        closeModal('modal-emp-form-unified');
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Erro ao solicitar empréstimo de material', true);
+      }
     } else {
+      let profRespId = null;
+      if (isAluno) {
+        const profSel = document.getElementById('emp-unified-prof-select');
+        if (!profSel.value) {
+          showToast('Para solicitações de alunos, a seleção de um Professor Responsável é obrigatória.', true);
+          return;
+        }
+        profRespId = parseInt(profSel.value);
+      }
+
       const payload = {
         kit: { id: parseInt(itemId) },
         solicitante: { id: currentUser ? currentUser.id : 1 },
@@ -2318,64 +2508,209 @@
         dataRetirada: dtRetirada ? dtRetirada + 'T10:00:00' : null,
         dataDevolucaoPrevista: dtDevolucao ? dtDevolucao + 'T18:00:00' : null,
         observacoes: obs,
-        status: 'Pendente'
+        professorResponsavel: profRespId ? { id: profRespId } : null
       };
-      await fetch(`${API_BASE}/emprestimos-kits`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      showToast('Solicitação de empréstimo de kit enviada!');
-    }
 
-    closeModal('modal-emp-form-unified');
-    loadAllData();
+      const res = await fetch(`${API_BASE}/emprestimos-kits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        showToast('Solicitação de empréstimo de kit enviada!');
+        closeModal('modal-emp-form-unified');
+        loadAllData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.erro || 'Erro ao solicitar empréstimo de kit', true);
+      }
+    }
   }
 
   function renderEmprestimosMateriaisTable() {
     const tbody = document.getElementById('emp-mat-tbody');
-    tbody.innerHTML = cacheEmprestimosMateriais.map(e => `
-      <tr>
-        <td style="font-weight:600">${e.material ? (e.material.nome || e.material.descricao) : 'Material'}</td>
-        <td><span class="cat-badge">${e.material && e.material.categorias ? e.material.categorias.nome : 'Geral'}</span></td>
-        <td>${e.quantidade} un</td>
-        <td>${e.solicitante ? e.solicitante.nome : 'Aluno'}</td>
-        <td>${e.dataRetirada ? new Date(e.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
-        <td>${e.dataDevolucao ? new Date(e.dataDevolucao).toLocaleDateString('pt-BR') : (e.dataDevolucaoPrevista ? new Date(e.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—')}</td>
-        <td><span class="status-pill ${e.status === 'Devolvido' ? 'green' : e.status === 'Retirado' ? 'blue' : 'yellow'}">${e.status}</span></td>
-        <td>
-          ${e.status === 'Pendente' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="updateEmpMatStatus(${e.id}, 'Aprovado')">Aprovar</button>` : ''}
-          ${e.status === 'Aprovado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--success);margin:0" onclick="updateEmpMatStatus(${e.id}, 'Retirado')">Retirar</button>` : ''}
-          ${e.status === 'Retirado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--purple);margin:0" onclick="updateEmpMatStatus(${e.id}, 'Devolvido')">Devolver</button>` : ''}
-        </td>
-      </tr>
-    `).join('');
+    const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+    const isAdmin = role.includes('admin');
+
+    tbody.innerHTML = cacheEmprestimosMateriais.map(e => {
+      let acoes = '—';
+      if (e.status === 'Pendente') {
+        if (isAdmin) {
+          acoes = `
+            <div style="display:flex;gap:4px">
+              <button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--success);margin:0" onclick="aprovarEmprestimoMaterial(${e.id})"><i class="fa-solid fa-check"></i> Aprovar</button>
+              <button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);margin:0" onclick="recusarEmprestimoMaterial(${e.id})"><i class="fa-solid fa-xmark"></i> Recusar</button>
+            </div>
+          `;
+        } else {
+          acoes = '<span style="font-size:11px;color:var(--text-muted)"><i class="fa-solid fa-hourglass-half" style="color:var(--warning)"></i> Aguardando Admin</span>';
+        }
+      } else if (e.status === 'Aprovado') {
+        if (isAdmin) {
+          acoes = `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--blue-light);color:#0f172a;margin:0" onclick="retirarEmprestimoMaterial(${e.id})"><i class="fa-solid fa-arrow-up-from-bracket"></i> Retirar</button>`;
+        }
+      } else if (e.status === 'Retirado') {
+        if (isAdmin) {
+          acoes = `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--purple);margin:0" onclick="devolverEmprestimoMaterial(${e.id})"><i class="fa-solid fa-rotate-left"></i> Devolver</button>`;
+        }
+      } else if (e.status === 'Recusado') {
+        acoes = `<span style="font-size:11px;color:var(--danger)">Recusado</span>`;
+      }
+
+      return `
+        <tr>
+          <td style="font-weight:600">${e.material ? (e.material.nome || e.material.descricao) : 'Material'}</td>
+          <td><span class="cat-badge">${e.material && e.material.categorias ? e.material.categorias.nome : 'Geral'}</span></td>
+          <td>${e.quantidade} un</td>
+          <td>${e.solicitante ? e.solicitante.nome : 'Usuário'}</td>
+          <td>${e.dataRetirada ? new Date(e.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
+          <td>${e.dataDevolucao ? new Date(e.dataDevolucao).toLocaleDateString('pt-BR') : (e.dataDevolucaoPrevista ? new Date(e.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—')}</td>
+          <td><span class="status-pill ${e.status === 'Devolvido' ? 'green' : e.status === 'Retirado' ? 'blue' : e.status === 'Aprovado' ? 'green' : e.status === 'Recusado' ? 'red' : 'yellow'}">${e.status}</span></td>
+          <td>${acoes}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
-  async function updateEmpMatStatus(id, newStatus) {
-    await fetch(`${API_BASE}/emprestimos/${id}/status?status=${newStatus}`, { method: 'PUT' });
-    showToast(`Empréstimo atualizado para: ${newStatus}`);
-    loadAllData();
+  async function aprovarEmprestimoMaterial(id) {
+    const res = await fetch(`${API_BASE}/emprestimos/${id}/aprovar?usuarioId=${currentUser.id}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Empréstimo de material aprovado com sucesso!');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao aprovar empréstimo', true);
+    }
+  }
+
+  async function recusarEmprestimoMaterial(id) {
+    const motivo = prompt('Informe o motivo da recusa (opcional):') || '';
+    const res = await fetch(`${API_BASE}/emprestimos/${id}/recusar?usuarioId=${currentUser.id}&motivo=${encodeURIComponent(motivo)}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Empréstimo de material recusado.');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao recusar empréstimo', true);
+    }
+  }
+
+  async function retirarEmprestimoMaterial(id) {
+    const res = await fetch(`${API_BASE}/emprestimos/${id}/retirar?usuarioId=${currentUser.id}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Retirada de material registrada!');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao registrar retirada', true);
+    }
+  }
+
+  async function devolverEmprestimoMaterial(id) {
+    const res = await fetch(`${API_BASE}/emprestimos/${id}/devolver?usuarioId=${currentUser.id}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Devolução de material registrada!');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao registrar devolução', true);
+    }
   }
 
   function renderEmprestimosKitsTable() {
     const tbody = document.getElementById('emp-kits-tbody');
-    tbody.innerHTML = cacheEmprestimosKits.map(e => `
-      <tr>
-        <td style="font-weight:600">${e.kit ? e.kit.nome : 'Kit'}</td>
-        <td>${e.solicitante ? e.solicitante.nome : 'Aluno'}</td>
-        <td>${e.dataRetirada ? new Date(e.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
-        <td>${e.dataDevolucaoPrevista ? new Date(e.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—'}</td>
-        <td><span class="status-pill ${e.status === 'Devolvido' ? 'green' : e.status === 'Retirado' ? 'blue' : 'yellow'}">${e.status}</span></td>
-        <td>
-          ${e.status === 'Pendente' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="updateEmpKitStatus(${e.id}, 'Aprovado')">Aprovar</button>` : ''}
-          ${e.status === 'Aprovado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--success);margin:0" onclick="updateEmpKitStatus(${e.id}, 'Retirado')">Retirar</button>` : ''}
-          ${e.status === 'Retirado' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--purple);margin:0" onclick="updateEmpKitStatus(${e.id}, 'Devolvido')">Devolver</button>` : ''}
-        </td>
-      </tr>
-    `).join('');
+    const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+    const isAdmin = role.includes('admin');
+    const isProf = role.includes('prof') || role.includes('docente');
+
+    tbody.innerHTML = cacheEmprestimosKits.map(e => {
+      let acoes = '—';
+      const isMyStudentRequest = isProf && e.professorResponsavel && currentUser && e.professorResponsavel.id === currentUser.id;
+      const isMyOwnRequest = e.solicitante && currentUser && e.solicitante.id === currentUser.id;
+
+      if (e.status === 'Pendente') {
+        if (isAdmin || (isMyStudentRequest && !isMyOwnRequest)) {
+          acoes = `
+            <div style="display:flex;gap:4px">
+              <button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--success);margin:0" onclick="aprovarEmprestimoKit(${e.id})"><i class="fa-solid fa-check"></i> Aprovar</button>
+              <button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);margin:0" onclick="recusarEmprestimoKit(${e.id})"><i class="fa-solid fa-xmark"></i> Recusar</button>
+            </div>
+          `;
+        } else {
+          acoes = '<span style="font-size:11px;color:var(--text-muted)"><i class="fa-solid fa-hourglass-half" style="color:var(--warning)"></i> Aguardando Autorização</span>';
+        }
+      } else if (e.status === 'Aprovado') {
+        if (isAdmin || isProf) {
+          acoes = `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--blue-light);color:#0f172a;margin:0" onclick="retirarEmprestimoKit(${e.id})"><i class="fa-solid fa-arrow-up-from-bracket"></i> Retirar</button>`;
+        }
+      } else if (e.status === 'Retirado') {
+        if (isAdmin || isProf) {
+          acoes = `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--purple);margin:0" onclick="devolverEmprestimoKit(${e.id})"><i class="fa-solid fa-rotate-left"></i> Devolver</button>`;
+        }
+      } else if (e.status === 'Recusado') {
+        acoes = `<span style="font-size:11px;color:var(--danger)" title="${e.motivoRecusa || ''}">Recusado</span>`;
+      }
+
+      const profRespText = e.professorResponsavel ? `Prof. ${e.professorResponsavel.nome}` : '—';
+
+      return `
+        <tr>
+          <td style="font-weight:600">${e.kit ? e.kit.nome : 'Kit'}</td>
+          <td>${e.solicitante ? e.solicitante.nome : 'Aluno'}</td>
+          <td><span style="font-size:12px;color:var(--blue-light)">${profRespText}</span></td>
+          <td>${e.dataRetirada ? new Date(e.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
+          <td>${e.dataDevolucaoPrevista ? new Date(e.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—'}</td>
+          <td><span class="status-pill ${e.status === 'Devolvido' ? 'green' : e.status === 'Retirado' ? 'blue' : e.status === 'Aprovado' ? 'green' : e.status === 'Recusado' ? 'red' : 'yellow'}">${e.status}</span></td>
+          <td>${acoes}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
-  async function updateEmpKitStatus(id, newStatus) {
-    await fetch(`${API_BASE}/emprestimos-kits/${id}/status?status=${newStatus}`, { method: 'PUT' });
-    showToast(`Empréstimo de kit atualizado para: ${newStatus}`);
-    loadAllData();
+  async function aprovarEmprestimoKit(id) {
+    const res = await fetch(`${API_BASE}/emprestimos-kits/${id}/aprovar?usuarioId=${currentUser.id}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Empréstimo de kit autorizado com sucesso!');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao aprovar empréstimo de kit', true);
+    }
+  }
+
+  async function recusarEmprestimoKit(id) {
+    const motivo = prompt('Informe o motivo da recusa (opcional):') || '';
+    const res = await fetch(`${API_BASE}/emprestimos-kits/${id}/recusar?usuarioId=${currentUser.id}&motivo=${encodeURIComponent(motivo)}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Empréstimo de kit recusado.');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao recusar empréstimo de kit', true);
+    }
+  }
+
+  async function retirarEmprestimoKit(id) {
+    const res = await fetch(`${API_BASE}/emprestimos-kits/${id}/retirar?usuarioId=${currentUser.id}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Retirada do kit confirmada! Estoque atualizado.');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao registrar retirada do kit', true);
+    }
+  }
+
+  async function devolverEmprestimoKit(id) {
+    const res = await fetch(`${API_BASE}/emprestimos-kits/${id}/devolver?usuarioId=${currentUser.id}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Devolução do kit confirmada! Estoque restabelecido.');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao registrar devolução do kit', true);
+    }
   }
 
   /* RESERVAS DE LABORATÓRIO */
@@ -2385,18 +2720,44 @@
 
   function renderLabTable() {
     const tbody = document.getElementById('lab-tbody');
-    tbody.innerHTML = cacheAgendamentosLab.map(l => `
-      <tr>
-        <td style="font-weight:600">${l.laboratorio}</td>
-        <td>${l.usuario ? l.usuario.nome : 'Docente'}</td>
-        <td>${l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '—'}</td>
-        <td>${l.horaInicio || '08:00'} - ${l.horaFim || '12:00'}</td>
-        <td><span class="status-pill ${l.status === 'APROVADO' ? 'green' : 'yellow'}">${l.status}</span></td>
-        <td>
-          ${l.status === 'PENDENTE' ? `<button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;margin:0" onclick="updateLabStatus(${l.id}, 'APROVADO')">Aprovar</button>` : ''}
-        </td>
-      </tr>
-    `).join('');
+    const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+    const isAdmin = role.includes('admin');
+    const isProf = role.includes('prof') || role.includes('docente');
+
+    tbody.innerHTML = cacheAgendamentosLab.map(l => {
+      let acoes = '—';
+      const isMyStudentRes = isProf && l.professorResponsavel && currentUser && l.professorResponsavel.id === currentUser.id;
+      const isMyOwnRes = l.usuario && currentUser && l.usuario.id === currentUser.id;
+
+      if (l.status === 'PENDENTE') {
+        if (isAdmin || (isMyStudentRes && !isMyOwnRes)) {
+          acoes = `
+            <div style="display:flex;gap:4px">
+              <button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:var(--success);margin:0" onclick="aprovarReservaLab(${l.id})"><i class="fa-solid fa-check"></i> Aprovar</button>
+              <button class="btn-action-primary" style="width:auto;padding:3px 8px;font-size:11px;background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);margin:0" onclick="recusarReservaLab(${l.id})"><i class="fa-solid fa-xmark"></i> Recusar</button>
+            </div>
+          `;
+        } else {
+          acoes = '<span style="font-size:11px;color:var(--text-muted)"><i class="fa-solid fa-hourglass-half" style="color:var(--warning)"></i> Aguardando Autorização</span>';
+        }
+      } else if (l.status === 'RECUSADO') {
+        acoes = `<span style="font-size:11px;color:var(--danger)" title="${l.motivoRecusa || ''}">Recusado</span>`;
+      }
+
+      const profRespText = l.professorResponsavel ? `Prof. ${l.professorResponsavel.nome}` : '—';
+
+      return `
+        <tr>
+          <td style="font-weight:600">${l.laboratorio}</td>
+          <td>${l.usuario ? l.usuario.nome : 'Docente'}</td>
+          <td><span style="font-size:12px;color:var(--blue-light)">${profRespText}</span></td>
+          <td>${l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '—'}</td>
+          <td>${l.horaInicio || '08:00'} - ${l.horaFim || '12:00'}</td>
+          <td><span class="status-pill ${l.status === 'APROVADO' ? 'green' : l.status === 'RECUSADO' ? 'red' : 'yellow'}">${l.status}</span></td>
+          <td>${acoes}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
   async function saveReservaLab() {
@@ -2404,8 +2765,22 @@
     const data = document.getElementById('res-lab-date').value;
     const horaInicio = document.getElementById('res-lab-hora-inicio').value;
     const horaFim = document.getElementById('res-lab-hora-fim').value;
+    const obs = document.getElementById('res-lab-obs').value;
 
     if (!data) { showToast('Selecione a data da reserva', true); return; }
+
+    const role = (currentUser && currentUser.tipoUsuario ? currentUser.tipoUsuario.toLowerCase() : 'aluno');
+    const isAluno = !role.includes('admin') && !role.includes('prof') && !role.includes('docente');
+
+    let profRespId = null;
+    if (isAluno) {
+      const profSel = document.getElementById('res-lab-prof-select');
+      if (!profSel.value) {
+        showToast('Para agendamentos de alunos, a seleção de um Professor Responsável é obrigatória.', true);
+        return;
+      }
+      profRespId = parseInt(profSel.value);
+    }
 
     const payload = {
       laboratorio: espaco,
@@ -2413,7 +2788,8 @@
       data,
       horaInicio,
       horaFim,
-      status: 'PENDENTE'
+      observacoes: obs,
+      professorResponsavel: profRespId ? { id: profRespId } : null
     };
 
     const res = await fetch(`${API_BASE}/agendamentos-laboratorio`, {
@@ -2423,55 +2799,184 @@
     });
 
     if (res.ok) {
-      showToast('Reserva criada com sucesso!');
+      showToast('Reserva solicitada com sucesso!');
       closeModal('modal-res-lab');
       loadAllData();
     } else {
       const err = await res.json().catch(() => ({ error: 'Conflito de horário detectado para este espaço.' }));
-      showToast(err.error || 'Conflito de horário detectado.', true);
+      showToast(err.error || 'Erro ao criar agendamento.', true);
     }
   }
 
-  async function updateLabStatus(id, status) {
-    await fetch(`${API_BASE}/agendamentos-laboratorio/${id}/status?status=${status}`, { method: 'PUT' });
-    showToast('Reserva atualizada');
-    loadAllData();
+  async function aprovarReservaLab(id) {
+    const res = await fetch(`${API_BASE}/agendamentos-laboratorio/${id}/aprovar?usuarioId=${currentUser.id}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Reserva de laboratório aprovada!');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'Erro ao aprovar reserva', true);
+    }
   }
 
+  async function recusarReservaLab(id) {
+    const motivo = prompt('Informe o motivo da recusa (opcional):') || '';
+    const res = await fetch(`${API_BASE}/agendamentos-laboratorio/${id}/recusar?usuarioId=${currentUser.id}&motivo=${encodeURIComponent(motivo)}`, { method: 'PUT' });
+    if (res.ok) {
+      showToast('Reserva de laboratório recusada.');
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'Erro ao recusar reserva', true);
+    }
+  }
 
+  /* ADMIN TABLES IN PERFIL */
+  function renderAdminUsersTable() {
+    const tbody = document.getElementById('admin-users-tbody');
+    if (!tbody) return;
+
+    if (!cacheUsuarios.length) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Nenhum usuário cadastrado.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = cacheUsuarios.map(u => {
+      const isSelf = currentUser && currentUser.id === u.id;
+      const userCargo = u.tipoUsuario ? u.tipoUsuario.toLowerCase() : 'aluno';
+      const selectVal = userCargo.includes('admin') ? 'Administrador' : (userCargo.includes('prof') ? 'Professor' : 'Aluno');
+
+      return `
+        <tr>
+          <td style="font-weight:600">${u.nome} ${isSelf ? '<span class="status-pill blue" style="font-size:10px;margin-left:4px">Você</span>' : ''}</td>
+          <td>${u.email}</td>
+          <td>
+            <select class="form-control" id="user-role-sel-${u.id}" style="width:auto;padding:4px 8px;font-size:12px">
+              <option value="Administrador" ${selectVal === 'Administrador' ? 'selected' : ''}>Administrador</option>
+              <option value="Professor" ${selectVal === 'Professor' ? 'selected' : ''}>Professor</option>
+              <option value="Aluno" ${selectVal === 'Aluno' ? 'selected' : ''}>Aluno</option>
+            </select>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn-action-primary" style="width:auto;padding:4px 10px;font-size:11px;margin:0" onclick="salvarCargoUsuario(${u.id})"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+              ${!isSelf ? `
+                <button class="btn-action-primary" style="background:rgba(239, 68, 68, 0.15);color:#FCA5A5;border:1px solid rgba(239, 68, 68, 0.3);width:auto;padding:4px 8px;font-size:11px;margin:0" onclick="excluirUsuarioAdmin(${u.id}, '${(u.nome || '').replace(/'/g, "\\'")}')" title="Excluir Usuário"><i class="fa-solid fa-trash"></i></button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function salvarCargoUsuario(userId) {
+    const sel = document.getElementById(`user-role-sel-${userId}`);
+    if (!sel) return;
+    const novoTipo = sel.value;
+
+    const res = await fetch(`${API_BASE}/usuario/${userId}/tipo?adminId=${currentUser.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipoUsuario: novoTipo })
+    });
+
+    if (res.ok) {
+      showToast(`Permissão do usuário atualizada para ${novoTipo}!`);
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao alterar permissão do usuário', true);
+    }
+  }
+
+  async function excluirUsuarioAdmin(userId, nome) {
+    if (!confirm(`Deseja realmente excluir o usuário "${nome}"?`)) return;
+
+    const res = await fetch(`${API_BASE}/usuario/${userId}?adminId=${currentUser.id}`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast(`Usuário "${nome}" excluído com sucesso!`);
+      loadAllData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.erro || 'Erro ao excluir usuário', true);
+    }
+  }
+
+  function renderAdminMovimentacoesTable() {
+    const tbody = document.getElementById('admin-mov-tbody');
+    if (!tbody) return;
+
+    if (!cacheMovimentacoes.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:16px">Nenhuma movimentação de estoque registrada.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = cacheMovimentacoes.slice().reverse().map(m => {
+      const dt = m.dataMovimentacao ? new Date(m.dataMovimentacao).toLocaleString('pt-BR') : '—';
+      const matName = m.materiais ? (m.materiais.nome || m.materiais.descricao) : 'Material';
+      const tipoPill = m.tipoMovimentacao === 'ENTRADA' ? 'green' : (m.tipoMovimentacao === 'SAIDA' ? 'red' : 'blue');
+
+      return `
+        <tr>
+          <td style="font-size:12px;color:var(--text-muted)">${dt}</td>
+          <td style="font-weight:600">${matName}</td>
+          <td><span class="status-pill ${tipoPill}">${m.tipoMovimentacao || 'MOVIMENTAÇÃO'}</span></td>
+          <td>${m.quantidade} un</td>
+          <td style="font-size:12px">${m.motivo || '—'}</td>
+          <td>${m.usuario ? m.usuario.nome : 'Administrador'}</td>
+        </tr>
+      `;
+    }).join('');
+  }
 
   /* PERFIL */
   function renderProfileHistory() {
     const loansTbody = document.getElementById('prof-my-loans-tbody');
-    const myLoans = cacheEmprestimosMateriais.concat(cacheEmprestimosKits);
+    const myLoans = cacheEmprestimosMateriais.concat(cacheEmprestimosKits)
+      .filter(l => l.solicitante && currentUser && l.solicitante.id === currentUser.id);
 
     if (!myLoans.length) {
-      loansTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Nenhum empréstimo ativo.</td></tr>`;
+      loansTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Nenhum empréstimo ativo para sua conta.</td></tr>`;
     } else {
-      loansTbody.innerHTML = myLoans.slice(0, 5).map(l => `
+      loansTbody.innerHTML = myLoans.slice(0, 8).map(l => `
         <tr>
           <td style="font-weight:600">${l.material ? (l.material.nome || l.material.descricao) : (l.kit ? l.kit.nome : 'Item')}</td>
-          <td>${l.dataRetirada ? new Date(l.dataRetirada).toLocaleDateString('pt-BR') : 'Hoje'}</td>
+          <td>${l.dataRetirada ? new Date(l.dataRetirada).toLocaleDateString('pt-BR') : '—'}</td>
           <td>${l.dataDevolucaoPrevista ? new Date(l.dataDevolucaoPrevista).toLocaleDateString('pt-BR') : '—'}</td>
-          <td><span class="status-pill ${l.status === 'Devolvido' ? 'green' : 'blue'}">${l.status}</span></td>
+          <td><span class="status-pill ${l.status === 'Devolvido' ? 'green' : l.status === 'Retirado' ? 'blue' : l.status === 'Aprovado' ? 'green' : l.status === 'Recusado' ? 'red' : 'yellow'}">${l.status}</span></td>
         </tr>
       `).join('');
     }
 
     const resTbody = document.getElementById('prof-my-reservas-tbody');
-    if (!cacheAgendamentosLab.length) {
-      resTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Nenhuma reserva ativa.</td></tr>`;
+    const myRes = cacheAgendamentosLab.filter(r => r.usuario && currentUser && r.usuario.id === currentUser.id);
+    if (!myRes.length) {
+      resTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Nenhuma reserva ativa para sua conta.</td></tr>`;
     } else {
-      resTbody.innerHTML = cacheAgendamentosLab.slice(0, 5).map(r => `
+      resTbody.innerHTML = myRes.slice(0, 8).map(r => `
         <tr>
           <td style="font-weight:600">${r.laboratorio}</td>
           <td>${r.data ? new Date(r.data).toLocaleDateString('pt-BR') : '—'}</td>
           <td>${r.horaInicio || '08:00'} - ${r.horaFim || '12:00'}</td>
-          <td><span class="status-pill ${r.status === 'APROVADO' ? 'green' : 'yellow'}">${r.status}</span></td>
+          <td><span class="status-pill ${r.status === 'APROVADO' ? 'green' : r.status === 'RECUSADO' ? 'red' : 'yellow'}">${r.status}</span></td>
         </tr>
       `).join('');
     }
   }
+
+  // Auto-restore session on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('stokio_current_user');
+    if (saved) {
+      try {
+        currentUser = JSON.parse(saved);
+        launchApp();
+      } catch (e) {
+        localStorage.removeItem('stokio_current_user');
+      }
+    }
+  });
 </script>
 </body>
 </html>

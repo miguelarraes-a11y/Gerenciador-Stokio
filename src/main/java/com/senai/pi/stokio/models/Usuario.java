@@ -112,4 +112,16 @@ public class Usuario {
     public void setTelefone(String telefone) {
         this.telefone = telefone;
     }
+
+    public boolean isAdmin() {
+        return tipoUsuario != null && (tipoUsuario.equalsIgnoreCase("admin") || tipoUsuario.equalsIgnoreCase("administrador"));
+    }
+
+    public boolean isProfessor() {
+        return tipoUsuario != null && (tipoUsuario.equalsIgnoreCase("professor") || tipoUsuario.equalsIgnoreCase("docente"));
+    }
+
+    public boolean isAluno() {
+        return tipoUsuario != null && (tipoUsuario.equalsIgnoreCase("aluno") || tipoUsuario.equalsIgnoreCase("estudante"));
+    }
 }
